@@ -1,10 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 
 @Injectable()
 export class CrawlerService {
+
+  constructor(
+    @Inject('CRAWLER_SERVICE') private readonly client: ClientKafka
+  ){}
+
+  //this service for fine availableLink
   async getavailableLink(url:string){
 
     try{
@@ -29,4 +36,10 @@ export class CrawlerService {
 
    
   }
+  //this service for emiit for crawler services
+  async sendUrlToCrawler(urlArray:string[]){
+    this.client.emit('get_crawler_service', urlArray);
+  }
+
+
 }

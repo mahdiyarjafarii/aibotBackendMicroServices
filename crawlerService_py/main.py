@@ -1,5 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
+from confluent_kafka import Consumer
+
+consumer_conf = {
+    'bootstrap.servers': 'localhost:9092',
+    'group.id': 'crawler-servicePy-group',
+    'auto.offset.reset': 'earliest'
+}
 
 def crawl_and_extract(links, output_file):
     with open(output_file, 'w', encoding='utf-8') as file:
@@ -15,11 +22,36 @@ def crawl_and_extract(links, output_file):
             except Exception as e:
                 print(f"Error crawling {link}: {e}")
 
-# Example usage:
-links_to_crawl = [
-    "https://plotset.com/about-us",
-    "https://plotset.com/faq"
-]
 
-output_file_path = "output.txt"
-crawl_and_extract(links_to_crawl, output_file_path)
+
+
+def consume_urls(consumer, topic):
+    consumer.subscribe([topic])
+
+    while True:
+        msg = consumer.poll(1.0)
+
+        if msg is None:
+            continue
+        if msg.error():
+            print("Consumer error: {}".format(msg.error()))
+            continue
+         
+        url_list = msg.value().decode('utf-8').split('\n')  # Assuming URLs are separated by newlines
+        print(f'Received URLs from Kafka: {url_list}')
+        print(type(url_list))
+        
+        output_file_path = "output.txt"
+        crawl_and_extract(url_list, output_file_path)
+
+
+
+
+consumer = Consumer(consumer_conf)
+
+
+consume_urls(consumer, 'get_crawler_service')
+
+
+consumer.close()
+
