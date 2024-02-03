@@ -28,7 +28,11 @@ export class CrawlerService {
           }
           allFoundURLs.push(href)
         });
-       return allFoundURLs; 
+
+
+      let uniqueURLs = [...new Set(allFoundURLs)];
+ 
+      return uniqueURLs; 
 
     }catch(err){
       console.log(err)

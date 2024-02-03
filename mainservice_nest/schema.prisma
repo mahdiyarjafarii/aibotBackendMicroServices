@@ -7,3 +7,15 @@ datasource db {
   url      = env("DB_URL")
   
 }
+
+
+model users {
+  user_id      String    @id @default(uuid())
+  name         String    @db.VarChar(255)
+  lastName     String?   @db.VarChar(255)
+  email        String?   @unique @db.VarChar(255)
+  passwordHash String    @db.VarChar(255)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+}
+
