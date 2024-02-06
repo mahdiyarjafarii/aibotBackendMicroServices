@@ -13,41 +13,40 @@ export class AuthController {
   constructor(private readonly authServices: AuthService) {}
 
   //for login api
-//   @Post('login')
-//   async loginUser(@Body() userLoginDto: UserLoginReq) {
-//     // console.log(user)
-//     const existingUser = await this.authServices.findeByEmail(
-//       userLoginDto.email,
-//     );
-//     if (!existingUser) {
-//       throw new HttpException('user is notfound', 401);
-//     }
+  @Post('login')
+  async loginUser(@Body() userLoginDto: UserLoginReq) {
+    const existingUser = await this.authServices.findeByEmail(
+      userLoginDto.email,
+    );
+    if (!existingUser) {
+      throw new HttpException('user is notfound', 401);
+    }
 
-//     const resultComapre = await bcrypt.compare(
-//       userLoginDto.password,
-//       existingUser.passwordHash,
-//     );
-//     if (resultComapre) {
-//       const cachedToken = await this.authServices.getTokenRedis(
-//         userLoginDto.email,
-//       );
-//       if (cachedToken) {
-//         console.log('use cached token');
-//         return { access_token: cachedToken };
-//       } else {
-//         const token = await this.authServices.generateToken(
-//           existingUser.user_id,
-//         );
-//         await this.authServices.setTokenRedis(userLoginDto.email, token,84600);
-//         console.log('use fresh token');
+    const resultComapre = await bcrypt.compare(
+      userLoginDto.password,
+      existingUser.passwordHash,
+    );
+    if (resultComapre) {
+      const cachedToken = await this.authServices.getTokenRedis(
+        userLoginDto.email,
+      );
+      if (cachedToken) {
+        console.log('use cached token');
+        return { access_token: cachedToken };
+      } else {
+        const token = await this.authServices.generateToken(
+          existingUser.user_id,
+        );
+        await this.authServices.setTokenRedis(userLoginDto.email, token,84600);
+        console.log('use fresh token');
 
-//         return { access_token: token };
-//       }
-//     } else {
-//       throw new HttpException('Password is not match', 401);
-//       // return { message: 'password is not match' };
-//     }
-//   }
+        return { access_token: token };
+      }
+    } else {
+      throw new HttpException('Password is not match', 401);
+      // return { message: 'password is not match' };
+    }
+  }
 
   //for signup api
   @Post('signup')
@@ -62,7 +61,7 @@ export class AuthController {
 
     const userCreated = await this.authServices.creatUser(userCreatDTO);
     const token = await this.authServices.generateToken(userCreated.user_id);
-    // await this.authServices.setTokenRedis(userCreatDTO.email, token,84600);
+    await this.authServices.setTokenRedis(userCreatDTO.email, token,84600);
     return { access_token: token };
   }
 

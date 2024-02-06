@@ -17,5 +17,14 @@ model users {
   passwordHash String    @db.VarChar(255)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
+  bots      bots[]
+}
+
+model bots {
+  bot_id      String    @id @default(uuid())
+  name        String    @db.VarChar(255)
+  user_id     String 
+  user        users          @relation(fields: [user_id], references: [user_id])
+
 }
 

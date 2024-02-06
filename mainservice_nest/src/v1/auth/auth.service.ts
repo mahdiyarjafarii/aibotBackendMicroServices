@@ -4,7 +4,7 @@ import { UserCreateReq, UserEntity, UserForgetPassReq, UserResetPassReq } from '
 // import { JwtService } from '@nestjs/jwt';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
-// import { Redis } from 'ioredis';
+import { Redis } from 'ioredis';
 // import { userType } from '@prisma/client';
 
 interface payloadJWT {
@@ -18,7 +18,7 @@ interface payloadJWT {
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
-    // @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
   ) {}
 
   async creatUser({
@@ -63,26 +63,26 @@ export class AuthService {
     return token;
   }
 
-//   async setTokenRedis(key: string, token: string ,timeExpire:number): Promise<string> {
-//     try {
-//       const cachedData = await this.redisClient.set(key, token);
-//       await this.redisClient.expire(key, timeExpire);
+  async setTokenRedis(key: string, token: string ,timeExpire:number): Promise<string> {
+    try {
+      const cachedData = await this.redisClient.set(key, token);
+      await this.redisClient.expire(key, timeExpire);
 
-//       return cachedData;
-//     } catch (e) {
-//       console.error(e);
-//     }
-//   }
+      return cachedData;
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
-//   async getTokenRedis(key: string): Promise<string> {
-//     try {
-//       const cachedData = await this.redisClient.get(key);
+  async getTokenRedis(key: string): Promise<string> {
+    try {
+      const cachedData = await this.redisClient.get(key);
 
-//       return cachedData;
-//     } catch (e) {
-//       console.error(e);
-//     }
-//   }
+      return cachedData;
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
 //   async deleteTokenRedis(key: string){
 //     try {
