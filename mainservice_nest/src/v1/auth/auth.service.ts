@@ -110,7 +110,11 @@ export class AuthService {
 
       if (!user) return null;
 
-      return user;
+      return{
+        ...user,
+        isAuthenticated:true
+      } 
+      
     } catch (error) {
       console.log(error);
       return null;

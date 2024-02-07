@@ -49,6 +49,7 @@ export class UserEntity {
     lastName: string;
     email: string;
     passwordHash:string
+    isAuthenticated?:boolean
 
   }
   

@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, Post } from '@nestjs/common';
+import { Controller, Get, HttpException, Post,Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq } from './dtos/auth.dto';
 import { Body, Req } from '@nestjs/common/decorators';
@@ -49,7 +49,7 @@ export class AuthController {
   }
 
   //for signup api
-  @Post('signup')
+  @Post('register')
   async signUpUser(@Body() userCreatDTO: UserCreateReq) {
     const existingUser = await this.authServices.findeByEmail(
       userCreatDTO.email,
@@ -63,6 +63,11 @@ export class AuthController {
     const token = await this.authServices.generateToken(userCreated.user_id);
     await this.authServices.setTokenRedis(userCreatDTO.email, token,84600);
     return { access_token: token };
+  }
+
+  @Get("auth-check")
+  async checkUser (@Headers('authorization') authorizationHeader: string){
+    return this.authServices.getUserWithToken(authorizationHeader)
   }
 
 
