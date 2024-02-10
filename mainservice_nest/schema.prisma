@@ -23,6 +23,9 @@ model users {
 model bots {
   bot_id      String    @id @default(uuid())
   name        String    @db.VarChar(255)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  type         String
   user_id     String 
   user        users          @relation(fields: [user_id], references: [user_id])
 
