@@ -1,0 +1,14 @@
+{
+  "name": "aibotbackendmicroservices",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "nest": "cd mainservice_nest && npm run start:dev",
+    "crawler": "cd crawlerService_py && python main.py"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
