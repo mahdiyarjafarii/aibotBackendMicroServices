@@ -44,6 +44,27 @@ export class ChatService {
     //     // Assuming the response is a text stream
     //     console.log(response.data.toString());
     //     return response.data.toString();
+    console.log(123, observable);
+
+    observable.subscribe({
+      //sum: '',
+      next(value) {
+        console.log('Adding: ' + value);
+        //this.sum = this.sum + value;
+      },
+      error() {
+        // We actually could just remove this method,
+        // since we do not really care about errors right now.
+      },
+      complete() {
+        console.log('Sum equals: ');
+      },
+    });
+
+    // return observable.pipe(
+    //   map((axiosResponse: AxiosResponse) => {
+    //     console.log(axiosResponse.data);
+    //     return axiosResponse.data;
     //   }),
     // );
     // observable.subscribe({
