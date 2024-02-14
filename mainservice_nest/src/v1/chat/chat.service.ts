@@ -3,19 +3,41 @@ import { Injectable } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
 import { Observable } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
+import { from } from 'rxjs';
+import axios from 'axios';
 
 @Injectable()
 export class ChatService {
   constructor(private readonly httpService: HttpService) {}
 
   callLCForStream(prompt: string): Observable<AxiosResponse<any, any>> {
-    const observable = this.httpService.post(
-      'http://localhost:8000/plotset/stream',
-      {
+    //https://www.npmjs.com/package/axios-observable
+    // Create an observable from the axios GET request
+    const dataObservable = from(
+      axios.post('http://localhost:8000/plotset/stream', {
         input: 'how to create barchart?',
-      },
-      { responseType: 'stream' },
+      }),
     );
+
+    // Subscribe to the observable to handle the response or error
+    dataObservable.subscribe({
+      next(response) {
+        console.log(123, response.data); // Handle the response data
+      },
+      error(err) {
+        console.error(err); // Handle the error
+      },
+      complete: () => {
+        console.log('Stream completed.');
+      },
+    });
+    // const observable = this.httpService.post(
+    //   'http://localhost:8000/plotset/stream',
+    //   {
+    //     input: 'how to create barchart?',
+    //   },
+    //   { responseType: 'stream' },
+    // );
 
     // observable.pipe(
     //   map((response) => {
@@ -35,13 +57,13 @@ export class ChatService {
     //     console.log('Stream completed.');
     //   },
     // });
-    return observable;
+    return dataObservable;
 
-    observable.forEach((value) => {
-      console.log(value);
-      console.log(123);
-      return value;
-    });
+    // observable.forEach((value) => {
+    //   console.log(value);
+    //   console.log(123);
+    //   return value;
+    // });
 
     // observable.pipe(
     //   map((res) => {

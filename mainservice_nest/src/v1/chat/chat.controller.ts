@@ -8,12 +8,13 @@ export class ChatController {
 
   @Post('stream')
   async generateResponseAsync(@Res() res: Response) {
-    this.chatServcie.callLCForStream('').subscribe(
-      (response) => response.data.pipe(res),
-      (error) => {
-        res.status(500).send('Internal Server Error');
-      },
-    );
+    this.chatServcie.callLCForStream('')
+    // this.chatServcie.callLCForStream('').subscribe(
+    //   (response) => response.data.pipe(res),
+    //   (error) => {
+    //     res.status(500).send('Internal Server Error');
+    //   },
+    // );
   }
 
 }
