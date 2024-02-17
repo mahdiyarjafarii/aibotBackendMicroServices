@@ -1,8 +1,8 @@
 import { Controller, Post, Res, Sse } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Response } from 'express';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
 
 @Controller('chat')
 export class ChatController {
@@ -52,16 +52,16 @@ export class ChatController {
   async sse(): Promise<Observable<any>> {
     const chatObservable = await this.chatServcie.callLCForStream('');
     //return interval(1000).pipe(map((_) => ({ data: { hello: 'world' } })));
-    return chatObservable.pipe(
-      map((value) => {
-        // Do any processing or transformation here
-        if (!value) return '';
-        const originalStr = value?.toString();
-        const secondLine = originalStr?.split('\n')?.[1];
-        const onlyVal = secondLine?.replace('data:', '');
-        return { data: onlyVal }; // For example, convert the value to a string
-      }),
-    );
+    // return chatObservable.pipe(
+    //   map((value) => {
+    //     // Do any processing or transformation here
+    //     if (!value) return '';
+    //     const originalStr = value?.toString();
+    //     const secondLine = originalStr?.split('\n')?.[1];
+    //     const onlyVal = secondLine?.replace('data:', '');
+    //     return { data: onlyVal }; // For example, convert the value to a string
+    //   }),
+    // );
 
     // # THIS CODE BLOCK IS USED FOR DEBUGGING
 
@@ -82,5 +82,24 @@ export class ChatController {
     //     console.log('Stream completed');
     //   },
     // });
+
+
+    // # this approach will close sse connection at end
+    const endSignal$ = new Subject();
+
+    // Merge the chatObservable with the completion signal
+    const mergedObservable$ = chatObservable.pipe(
+      map((value) => {
+        // Do any processing or transformation here
+        if (!value) return '';
+        const originalStr = value?.toString();
+        const secondLine = originalStr?.split('\n')?.[1];
+        const onlyVal = secondLine?.replace('data:', '');
+        return { data: onlyVal }; // For example, convert the value to a string
+      }),
+      // Complete the stream when the endSignal$ emits
+      takeUntil(endSignal$),
+    );
+    return mergedObservable$;
   }
 }
