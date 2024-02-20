@@ -21,7 +21,7 @@ export class ChatController {
           if (!value) return '';
           const originalStr = value?.toString();
           const secondLine = originalStr?.split('\n')?.[1];
-          const onlyVal = secondLine?.replace('data:', '');
+          const onlyVal = secondLine?.replace(/^data:"?|"$/g, '');
           return { data: { message: onlyVal } }; // For example, convert the value to a string
         }),
       )

@@ -11,6 +11,28 @@ export class ChatService {
   constructor(private readonly httpService: HttpService) {}
 
   async callLCForStream(prompt: string): Promise<Observable<string>> {
+
+    //USE THIS:
+
+    // const response = await fetchEventSource("http://localhost:8000/plotset/stream", {
+    //                 method: "POST",
+    //                 headers: {
+    //                   "Content-Type": "text/event-stream",
+    //                 },
+    //                 body: JSON.stringify({
+    //                   input: input,
+    //                 }),
+    //                 onmessage (msg) {
+    //                   if (msg.event === "data") {
+    //                     let messageData = JSON.parse(msg.data)
+    //                     chat.streamChunkToLastMessage(messageData);
+    //                   }
+    //                 },
+    //                 onerror(err){
+    //                   console.error("Error fetching data:",err);
+    //                 },
+    //               });
+
     const response = await fetch('http://localhost:8000/plotset/stream', {
       method: 'POST',
       headers: {
@@ -20,6 +42,8 @@ export class ChatService {
         input: 'what is plotset?',
       }),
     });
+
+
 
     const reader = response.body
       .pipeThrough(new TextDecoderStream())
