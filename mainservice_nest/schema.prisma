@@ -28,6 +28,17 @@ model bots {
   type         String
   user_id     String 
   user        users          @relation(fields: [user_id], references: [user_id])
-
+  token_limit_pp Int         @default(8000)
+  token_limit Int
+  config  Json  @default("{}")
+  evals Json @default("{}")
+  model String? @default("gpt-3.5-turbo-16k")
 }
 
+model datasources {
+    datasource_id String    @id @default(uuid())
+    urls String    @db.VarChar(255)
+    static_files Json @default("{}")
+    instagram_id String    @db.VarChar(255)
+    knowledge_base Json @default("{}")
+}
