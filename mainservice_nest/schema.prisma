@@ -30,7 +30,7 @@ model bots {
   user        users          @relation(fields: [user_id], references: [user_id])
   token_limit_pp Int         @default(8000)
   token_limit Int
-  config  Json  @default("{}")
+  config         Json     @default("{ \"ui\":{},\"action_btns\":[],\"input_types\":[],\"greet_messages\":[],\"ask_credentials\":{},\"system\":\"\",\"has_memory\":false}")
   evals Json @default("{}")
   model String? @default("gpt-3.5-turbo-16k")
 }
