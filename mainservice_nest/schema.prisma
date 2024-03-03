@@ -25,6 +25,7 @@ model bots {
   name        String    @db.VarChar(255)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
+  status    String @default("active")
   type         String
   user_id     String 
   user        users          @relation(fields: [user_id], references: [user_id])

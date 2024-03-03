@@ -1,15 +1,19 @@
-import { Controller, Post, Res, Sse } from '@nestjs/common';
+import { Body, Controller, Post, Res, Sse } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Response } from 'express';
 import { map, takeUntil } from 'rxjs/operators';
 import { Observable, Subject } from 'rxjs';
+import { ChatCredentials } from './dtos/chat.dto';
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatServcie: ChatService) {}
 
   @Post('stream')
-  async generateResponseAsync(@Res() res: Response) {
+  async generateResponseAsync(
+    @Body() chatCredentials: ChatCredentials,
+    @Res() res: Response,
+  ) {
     res.setHeader('Content-Type', 'text/event-stream');
 
     const chatObservable = await this.chatServcie.callLCForStream('');
@@ -48,8 +52,8 @@ export class ChatController {
     return 123;
   }
 
-  @Sse('sse')
-  async sse(): Promise<Observable<any>> {
+  @Sse('ss')
+  async ss(): Promise<Observable<any>> {
     const chatObservable = await this.chatServcie.callLCForStream('');
     //return interval(1000).pipe(map((_) => ({ data: { hello: 'world' } })));
     // return chatObservable.pipe(
@@ -82,7 +86,6 @@ export class ChatController {
     //     console.log('Stream completed');
     //   },
     // });
-
 
     // # this approach will close sse connection at end
     const endSignal$ = new Subject();
