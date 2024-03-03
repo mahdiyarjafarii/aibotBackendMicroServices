@@ -31,18 +31,15 @@ export class ChatController {
       )
       .subscribe({
         next: (value) => {
-          console.log(1111);
-
+          
           console.log('Received:', value);
           res.write(value);
         },
         error: (error) => {
-          console.log(2222);
 
           console.error('Error:', error);
         },
         complete: () => {
-          console.log(3333);
 
           console.log('Stream completed');
           res.end();
