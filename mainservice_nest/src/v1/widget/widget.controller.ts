@@ -5,10 +5,15 @@ import { WidgetService } from './widget.service';
 export class WidgetController {
   constructor(private readonly widgetService: WidgetService) {}
 
-
-  @Get('generate')
-  async generateWidget({ userId, botId }: { userId: string; botId: string }) {
-    return this.widgetService.getBotConfigService({
+  @Get('generate-token')
+  async generateWidgetToken({
+    userId,
+    botId,
+  }: {
+    userId: string;
+    botId: string;
+  }) {
+    return this.widgetService.generateWidgetTokenService({
       userId,
       botId,
     });
@@ -21,6 +26,4 @@ export class WidgetController {
       botId,
     });
   }
-
-  
 }
