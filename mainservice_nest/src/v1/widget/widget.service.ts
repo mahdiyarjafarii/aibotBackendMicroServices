@@ -44,7 +44,6 @@ export class WidgetService {
       // if (!user) return null;
 
       return payload;
-
     } catch (error) {
       console.log(error);
       return null;

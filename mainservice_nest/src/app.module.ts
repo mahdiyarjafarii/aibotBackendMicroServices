@@ -12,6 +12,7 @@ import { ChatModule } from './v1/chat/chat.module';
 import { ChatService } from './v1/chat/chat.service';
 //import { ChatController } from './v1/chat/chat.controller';
 import { HttpModule } from '@nestjs/axios';
+import { WidgetModule } from './v1/widget/widget.module';
 @Module({
   imports: [
     CrawlerModule,
@@ -20,6 +21,7 @@ import { HttpModule } from '@nestjs/axios';
     MyBotsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ChatModule,
+    WidgetModule,
     {
       ...HttpModule.register({
         timeout: 15000,

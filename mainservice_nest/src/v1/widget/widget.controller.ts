@@ -1,21 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { WidgetService } from './widget.service';
 
 @Controller('widget')
 export class WidgetController {
   constructor(private readonly widgetService: WidgetService) {}
 
-  @Get('generate-token')
-  async generateWidgetToken({
-    userId,
-    botId,
-  }: {
-    userId: string;
-    botId: string;
-  }) {
+  @Post('generate-token')
+  async generateWidgetToken(@Body() body: any) {
     return this.widgetService.generateWidgetTokenService({
-      userId,
-      botId,
+      userId: body.userId,
+      botId: body.botId,
     });
   }
 
