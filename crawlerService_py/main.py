@@ -52,6 +52,5 @@ consumer = Consumer(consumer_conf)
 
 consume_urls(consumer, 'get_crawler_service')
 
-
 consumer.close()
 
