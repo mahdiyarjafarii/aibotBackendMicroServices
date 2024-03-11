@@ -1,6 +1,11 @@
 import { Injectable, Inject, HttpException } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
-import { UserCreateReq, UserEntity, UserForgetPassReq, UserResetPassReq } from './dtos/auth.dto';
+import {
+  UserCreateReq,
+  UserEntity,
+  UserForgetPassReq,
+  UserResetPassReq,
+} from './dtos/auth.dto';
 // import { JwtService } from '@nestjs/jwt';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
@@ -27,8 +32,6 @@ export class AuthService {
     email,
     password,
   }: UserCreateReq): Promise<UserEntity> {
-
-
     try {
       const passwordHash = await bcrypt.hash(password, process.env.SALT_BCRYPT);
       const createduser = await this.prismaService.users.create({
@@ -63,7 +66,11 @@ export class AuthService {
     return token;
   }
 
-  async setTokenRedis(key: string, token: string ,timeExpire:number): Promise<string> {
+  async setTokenRedis(
+    key: string,
+    token: string,
+    timeExpire: number,
+  ): Promise<string> {
     try {
       const cachedData = await this.redisClient.set(key, token);
       await this.redisClient.expire(key, timeExpire);
@@ -84,14 +91,14 @@ export class AuthService {
     }
   }
 
-//   async deleteTokenRedis(key: string){
-//     try {
-//        await this.redisClient.del(key);
+  //   async deleteTokenRedis(key: string){
+  //     try {
+  //        await this.redisClient.del(key);
 
-//     } catch (e) {
-//       console.error(e);
-//     }
-//   }
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   }
 
   async getUserWithToken(token: string): Promise<UserEntity | undefined> {
     try {
@@ -110,89 +117,84 @@ export class AuthService {
 
       if (!user) return null;
 
-      return{
+      return {
         ...user,
-        isAuthenticated:true
-      } 
-      
+        isAuthenticated: true,
+      };
     } catch (error) {
       console.log(error);
       return null;
     }
   }
 
-//   async forgetPasswordService({email}:UserForgetPassReq){
-//     //step 1 (check teh user is exist):
-//     const existingUser = await this.findeByEmail(email);
-  
-//     if (!existingUser) {
-//       throw new HttpException('user is notfound', 401);
-//     }
-//     //
+  //   async forgetPasswordService({email}:UserForgetPassReq){
+  //     //step 1 (check teh user is exist):
+  //     const existingUser = await this.findeByEmail(email);
 
-//     //step2 (generate token and stored fresh token in redis):
-//     const token=await this.generateToken(existingUser.user_id);
-//     const existToken= this.getTokenRedis(existingUser.user_id);
+  //     if (!existingUser) {
+  //       throw new HttpException('user is notfound', 401);
+  //     }
+  //     //
 
-//     if(existToken){
-//       await this.deleteTokenRedis(existingUser.user_id);
-//     };
-//     //for 15 min stored in redis
-//     await this.setTokenRedis(existingUser.user_id,token,900);
-//     //todo: add push notficarion email services
-//     return {token}
+  //     //step2 (generate token and stored fresh token in redis):
+  //     const token=await this.generateToken(existingUser.user_id);
+  //     const existToken= this.getTokenRedis(existingUser.user_id);
 
-//   }
+  //     if(existToken){
+  //       await this.deleteTokenRedis(existingUser.user_id);
+  //     };
+  //     //for 15 min stored in redis
+  //     await this.setTokenRedis(existingUser.user_id,token,900);
+  //     //todo: add push notficarion email services
+  //     return {token}
 
+  //   }
 
-//   async resetPasswordServices({token,newPassword}:UserResetPassReq){
-//     let userId: string;
-//     //step 1 (check validate and expire time for token):
-//     try{
-//       const payload = (await jwt.verify(
-//         token,
-//         process.env.JWT_SECRET,
-//       )) as payloadJWT;
-//       userId = payload.userId; // Assign the userId from the payload
+  //   async resetPasswordServices({token,newPassword}:UserResetPassReq){
+  //     let userId: string;
+  //     //step 1 (check validate and expire time for token):
+  //     try{
+  //       const payload = (await jwt.verify(
+  //         token,
+  //         process.env.JWT_SECRET,
+  //       )) as payloadJWT;
+  //       userId = payload.userId; // Assign the userId from the payload
 
-//       const storedToken=await this.getTokenRedis(payload.userId);
-//       if(!storedToken){
-//         throw new HttpException('the expire time is for this link is end', 401);
-//       }
+  //       const storedToken=await this.getTokenRedis(payload.userId);
+  //       if(!storedToken){
+  //         throw new HttpException('the expire time is for this link is end', 401);
+  //       }
 
-      
+  //     }catch (error){
+  //       if (error instanceof jwt.TokenExpiredError) {
+  //         console.error('Token expired:', error.message);
 
-//     }catch (error){
-//       if (error instanceof jwt.TokenExpiredError) {
-//         console.error('Token expired:', error.message);
-      
-//       } else if (error instanceof jwt.JsonWebTokenError) {
-//         console.error('Invalid token:', error.message);
-     
-//       } else {
-       
-//         console.error('Token verification failed:', error);
-//       }
-//     }
-//     //
+  //       } else if (error instanceof jwt.JsonWebTokenError) {
+  //         console.error('Invalid token:', error.message);
 
-//     //step 2 (updated password):
-//     const passwordHash = await bcrypt.hash(newPassword, process.env.SALT_BCRYPT);
+  //       } else {
 
-//      const updatedUser= await this.prismaService.users.update({
-//       where:{
-//         user_id:userId
-//       },
-//       data:{
-//         passwordHash
-//       }
-//      });
+  //         console.error('Token verification failed:', error);
+  //       }
+  //     }
+  //     //
 
-//      console.log("password changed..");
+  //     //step 2 (updated password):
+  //     const passwordHash = await bcrypt.hash(newPassword, process.env.SALT_BCRYPT);
 
-//      return updatedUser
+  //      const updatedUser= await this.prismaService.users.update({
+  //       where:{
+  //         user_id:userId
+  //       },
+  //       data:{
+  //         passwordHash
+  //       }
+  //      });
 
+  //      console.log("password changed..");
 
-//     //
-//   }
+  //      return updatedUser
+
+  //     //
+  //   }
 }
