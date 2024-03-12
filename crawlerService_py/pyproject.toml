@@ -11,6 +11,9 @@ psycopg2 = "^2.9.9"
 langchain = "^0.1.11"
 confluent-kafka = "^2.3.0"
 bs4 = "^0.0.2"
+langchain-community = "^0.0.27"
+langchain-openai = "^0.0.8"
+python-dotenv = "^1.0.1"
 
 
 [build-system]

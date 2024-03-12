@@ -35,5 +35,6 @@ export class CrawlerService {
   //this service for emiit for crawler services
   async sendUrlToCrawler(urlArray: string[]) {
     this.client.emit('aqkjtrhb-default', urlArray);
+    return urlArray;
   }
 }
