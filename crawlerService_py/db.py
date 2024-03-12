@@ -15,6 +15,7 @@ class Database:
 
     def connect(self):
         """Establishes a connection to the database."""
+        print("Database connection initialized !")
         self.connection = psycopg2.connect(**db_params)
 
     def disconnect(self):

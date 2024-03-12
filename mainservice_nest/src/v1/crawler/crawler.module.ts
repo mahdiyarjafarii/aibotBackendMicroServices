@@ -2,22 +2,29 @@ import { Module } from '@nestjs/common';
 import { CrawlerService } from './crawler.service';
 import { CrawlerController } from './crawler.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-
+import { hostname } from 'os';
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: 'CRAWLER_SERVICE',
+        name: 'KAFKA_SERVICE',
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'py-service-client',
-            brokers: ['localhost:9092'],
+            ssl: true,
+            sasl: {
+              mechanism: 'scram-sha-512',
+              username: 'aqkjtrhb',
+              password: 'JSY-cpUfbH6qH5pt2DxbFriMo-tTgygV',
+            },
+            clientId: hostname(),
+            brokers: ['dory.srvs.cloudkafka.com:9094'],
           },
-          consumer: {
-            groupId: 'crawler-servicePy-group'
-          }
+          producerOnlyMode: true,
+          // consumer: {
+          //   groupId: 'aqkjtrhb-foo',
+          // },
         },
       },
     ]),
