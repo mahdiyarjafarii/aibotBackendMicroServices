@@ -1,10 +1,7 @@
 from langchain_openai import OpenAIEmbeddings
 import os
 
-key=os.getenv("OPENAI_API_KEY")
-print(key)
-
-embeddings_model = 
+embeddings_model = OpenAIEmbeddings()
 
 def create_document_embedding(docs):
     docs_text=[]

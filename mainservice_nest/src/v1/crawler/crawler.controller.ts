@@ -10,13 +10,16 @@ import { UserUrlsReqDTO } from './dtos/crawler.dto';
 export class CrawlerController {
   constructor(private readonly crawlerService: CrawlerService) {}
 
-  @Get("links")
+  @Get('links')
   async getListLink(@Query('url') url?: string) {
     return await this.crawlerService.getavailableLink(url);
   }
 
   @Post()
   async sendArrayLinkForCrawler(@Body() UserUrlsReq: UserUrlsReqDTO) {
-    return await this.crawlerService.sendUrlToCrawler(UserUrlsReq.url);
+    return await this.crawlerService.sendUrlToCrawler(
+      UserUrlsReq.botId,
+      UserUrlsReq.urls,
+    );
   }
 }

@@ -36,6 +36,7 @@ model bots {
 
 model datasources {
   datasource_id  String @id @default(uuid())
+  bot_id String   @db.VarChar(255)
   urls           String @db.VarChar(255)
   static_files   Json   @default("{}")
   instagram_id   String @db.VarChar(255)
@@ -46,10 +47,10 @@ model datasources {
 
 model embeddings {
   id        BigInt                 @id @default(autoincrement())
+  bot_id String   @db.VarChar(255)
   content   String?
   metadata  Json?
   embedding Unsupported("vector")?
 
   @@ignore
 }
-

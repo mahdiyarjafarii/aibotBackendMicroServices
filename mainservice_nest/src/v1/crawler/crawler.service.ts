@@ -33,8 +33,12 @@ export class CrawlerService {
     }
   }
   //this service for emiit for crawler services
-  async sendUrlToCrawler(urlArray: string[]) {
-    this.client.emit('aqkjtrhb-default', urlArray);
+  async sendUrlToCrawler(botId: string, urlArray: string[]) {
+    const dto = {
+      botId,
+      urlArray,
+    };
+    this.client.emit('aqkjtrhb-default', JSON.stringify(dto));
     return urlArray;
   }
 }
