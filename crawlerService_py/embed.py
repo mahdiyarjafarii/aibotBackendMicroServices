@@ -1,5 +1,8 @@
 from langchain_openai import OpenAIEmbeddings
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 embeddings_model = OpenAIEmbeddings()
 

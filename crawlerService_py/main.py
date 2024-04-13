@@ -9,6 +9,7 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 from bs4 import BeautifulSoup as Soup
 from utils import recursive_char_splitter
 from embed import create_document_embedding
+
 import os
 
 load_dotenv()
@@ -23,6 +24,8 @@ consumer_conf = {'bootstrap.servers': 'dory.srvs.cloudkafka.com:9094',
 
 
 def crawl_and_extract(bot_id,links):
+    collection_id = database_instance.create_or_return_collection_uuid(bot_id)
+    
     for link in links:
         print("Now in link:" , link)
         try:
@@ -43,9 +46,10 @@ def crawl_and_extract(bot_id,links):
             
             for index, chunk in enumerate(chunked_docs):
                 database_instance.insert_embedding_record(bot_id=bot_id,
-                    content = chunk.page_content,
+                                        content = chunk.page_content,
                                         metadata = chunk.metadata,
-                                        embedding = embedded_chunks[index]
+                                        embedding = embedded_chunks[index],
+                                        collection_id = collection_id
                                         )
             
 
