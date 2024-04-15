@@ -45,12 +45,23 @@ model datasources {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 
-model embeddings {
-  id        BigInt                 @id @default(autoincrement())
-  bot_id String   @db.VarChar(255)
-  content   String?
-  metadata  Json?
-  embedding Unsupported("vector")?
+model langchain_pg_embedding {
+  collection_id           String?                  @db.Uuid
+  embedding               Unsupported("vector")?
+  document                String?                  @db.VarChar
+  cmetadata               Json?                    @db.Json
+  custom_id               String?                  @db.VarChar
+  uuid                    String                   @id @db.Uuid
+  langchain_pg_collection langchain_pg_collection? @relation(fields: [collection_id], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@ignore
+}
+
+model langchain_pg_collection {
+  name                   String?                  @db.VarChar
+  cmetadata              Json?                    @db.Json
+  uuid                   String                   @id @db.Uuid
+  langchain_pg_embedding langchain_pg_embedding[]
 
   @@ignore
 }
