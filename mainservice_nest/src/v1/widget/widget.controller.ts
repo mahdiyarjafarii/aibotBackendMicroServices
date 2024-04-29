@@ -13,6 +13,11 @@ export class WidgetController {
     });
   }
 
+  @Post('get-collection')
+  async getCollectionName(@Body() body: any) {
+    return this.widgetService.getCollectionNameService(body.token);
+  }
+
   @Get('config')
   async getBotConfig({ userId, botId }: { userId: string; botId: string }) {
     return this.widgetService.getBotConfigService({
