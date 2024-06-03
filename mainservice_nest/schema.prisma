@@ -5,29 +5,63 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DB_URL")
-  
 }
 
-
 model users {
-  user_id      String    @id @default(uuid())
-  name         String    @db.VarChar(255)
-  lastName     String?   @db.VarChar(255)
-  email        String?   @unique @db.VarChar(255)
-  passwordHash String    @db.VarChar(255)
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  bots      bots[]
+  user_id      String   @id @default(uuid())
+  name         String   @db.VarChar(255)
+  lastName     String?  @db.VarChar(255)
+  email        String?  @unique @db.VarChar(255)
+  passwordHash String   @db.VarChar(255)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  bots         bots[]
 }
 
 model bots {
-  bot_id      String    @id @default(uuid())
-  name        String    @db.VarChar(255)
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  type         String
-  user_id     String 
-  user        users          @relation(fields: [user_id], references: [user_id])
-
+  bot_id         String   @id @default(uuid())
+  name           String   @db.VarChar(255)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  type           String
+  user_id        String
+  config         Json     @default("{\"ui\": {}, \"system\": \"\", \"has_memory\": false, \"action_btns\": [], \"input_types\": [], \"greet_messages\": [], \"ask_credentials\": {}}")
+  evals          Json     @default("{}")
+  model          String?  @default("gpt-3.5-turbo-16k")
+  status         String   @default("active")
+  token_limit    Int      @default(8000000)
+  token_limit_pp Int      @default(8000)
+  user           users    @relation(fields: [user_id], references: [user_id])
 }
 
+model datasources {
+  datasource_id  String @id @default(uuid())
+  bot_id String   @db.VarChar(255)
+  urls           String @db.VarChar(255)
+  static_files   Json   @default("{}")
+  instagram_id   String @db.VarChar(255)
+  knowledge_base Json   @default("{}")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+
+model langchain_pg_embedding {
+  collection_id           String?                  @db.Uuid
+  embedding               Unsupported("vector")?
+  document                String?                  @db.VarChar
+  cmetadata               Json?                    @db.Json
+  custom_id               String?                  @db.VarChar
+  uuid                    String                   @id @db.Uuid
+  langchain_pg_collection langchain_pg_collection? @relation(fields: [collection_id], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@ignore
+}
+
+model langchain_pg_collection {
+  name                   String?                  @db.VarChar
+  cmetadata              Json?                    @db.Json
+  uuid                   String                   @id @db.Uuid
+  langchain_pg_embedding langchain_pg_embedding[]
+
+  @@ignore
+}
