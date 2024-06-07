@@ -42,13 +42,9 @@ export class AuthController {
     return userCreated;
   }
 
-  @Get("auth-check")
-  async checkUser (@Headers('authorization') authorizationHeader: string){
-    return this.authServices.getUserWithToken(authorizationHeader)
-  };
 
 
-  @Get('status')
+  @Get('auth-check')
   @UseGuards(JwtAuthGuard)
   async status(@Req() req: Request){
     return req.user
