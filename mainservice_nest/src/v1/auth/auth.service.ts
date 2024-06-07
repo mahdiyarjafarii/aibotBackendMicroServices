@@ -1,6 +1,7 @@
 import { Injectable, Inject, HttpException } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import {
+  AuthPayloadDto,
   UserCreateReq,
   UserEntity,
   UserForgetPassReq,
@@ -10,20 +11,25 @@ import {
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { Redis } from 'ioredis';
+import { JwtService } from '@nestjs/jwt';
 // import { userType } from '@prisma/client';
 
 interface payloadJWT {
-  userId: string;
+  username: string;
   user_type: any;
   iat: number;
   exp: number;
-}
+};
+
+
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+    private jwtService: JwtService,
+
   ) {}
 
   async creatUser({
@@ -55,6 +61,49 @@ export class AuthService {
         email: email,
       },
     });
+  };
+
+
+  async validateUser({ email, password }: AuthPayloadDto) {
+    const user = await this.prismaService.users.findFirst({
+      where: {
+        email: email,
+      },
+    });
+    if (user && (await bcrypt.compare(password, user.passwordHash))) {
+      const { passwordHash, ...result } = user;
+      return result;
+    }
+    return null;
+
+ 
+  };
+
+  async login(user: any) {
+    const payload = {
+      username: user.email,
+      sub: {
+        name: user.name,
+      },
+    };
+
+    return {
+      ...user,
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+    };
+  }
+
+
+  async generateNewAccessToken(user: any): Promise<string> {
+    const payload = {
+      username: user.email,
+      sub: {
+        name: user.name,
+      },
+    };
+
+    return this.jwtService.sign(payload);
   }
 
   async generateToken(userId: string): Promise<string> {
@@ -102,16 +151,17 @@ export class AuthService {
 
   async getUserWithToken(token: string): Promise<UserEntity | undefined> {
     try {
-      const payload = (await jwt.verify(
-        token,
-        process.env.JWT_SECRET,
+      const payload = (await this.jwtService.verify(
+        token
       )) as payloadJWT;
       if (!payload) {
         return null;
-      }
+      };
+
+      console.log(payload)
       const user = await this.prismaService.users.findUnique({
         where: {
-          user_id: payload.userId,
+          email: payload.username,
         },
       });
 

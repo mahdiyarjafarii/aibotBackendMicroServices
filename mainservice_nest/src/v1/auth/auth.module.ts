@@ -4,6 +4,7 @@ import { AuthController } from './auth.controller';
 import { PrismaModule } from 'src/infrastructure/prisma/prisma.module'; 
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
+import { LocalStrategy } from './strategies/local-strategy';
 
 
 
@@ -16,7 +17,7 @@ import { RedisModule } from 'src/infrastructure/redis/redis.module';
     }),
     RedisModule
   ],
-  providers: [AuthService],
+  providers: [AuthService,LocalStrategy],
   controllers: [AuthController],
   exports:[AuthService]
 })

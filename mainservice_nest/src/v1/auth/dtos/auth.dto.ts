@@ -26,6 +26,12 @@ export class UserLoginReq{
 
 }
 
+export class AuthPayloadDto {
+  email: string;
+
+  password: string;
+}
+
 export class UserForgetPassReq{
   @IsString()
   email :string

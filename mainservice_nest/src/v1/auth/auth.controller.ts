@@ -1,9 +1,14 @@
 import { Controller, Get, HttpException, Post,Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq } from './dtos/auth.dto';
-import { Body, Req } from '@nestjs/common/decorators';
+import { Body, Req, UseGuards } from '@nestjs/common/decorators';
 import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
+import { LocalGuard } from './guards/local.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { RefreshTokenGuard } from './guards/refresh.guard';
+
 
 @Controller({
   path: 'auth',
@@ -12,43 +17,16 @@ import { Request } from 'express';
 export class AuthController {
   constructor(private readonly authServices: AuthService) {}
 
-  //for login api
+
+
   @Post('login')
-  async loginUser(@Body() userLoginDto: UserLoginReq) {
-    const existingUser = await this.authServices.findeByEmail(
-      userLoginDto.email,
-    );
-    if (!existingUser) {
-      throw new HttpException('user is notfound', 401);
-    }
-
-    const resultComapre = await bcrypt.compare(
-      userLoginDto.password,
-      existingUser.passwordHash,
-    );
-    if (resultComapre) {
-      const cachedToken = await this.authServices.getTokenRedis(
-        userLoginDto.email,
-      );
-      if (cachedToken) {
-        console.log('use cached token');
-        return { access_token: cachedToken };
-      } else {
-        const token = await this.authServices.generateToken(
-          existingUser.user_id,
-        );
-        await this.authServices.setTokenRedis(userLoginDto.email, token,84600);
-        console.log('use fresh token');
-
-        return { access_token: token };
-      }
-    } else {
-      throw new HttpException('Password is not match', 401);
-      // return { message: 'password is not match' };
-    }
+  @UseGuards(LocalGuard)
+  async login(@Req() req: Request) {
+    return await this.authServices.login(req.user);
   }
 
-  //for signup api
+
+
   @Post('register')
   async signUpUser(@Body() userCreatDTO: UserCreateReq) {
     const existingUser = await this.authServices.findeByEmail(
@@ -60,25 +38,31 @@ export class AuthController {
     }
 
     const userCreated = await this.authServices.creatUser(userCreatDTO);
-    const token = await this.authServices.generateToken(userCreated.user_id);
-    await this.authServices.setTokenRedis(userCreatDTO.email, token,84600);
-    return { access_token: token };
+  
+    return userCreated;
   }
 
   @Get("auth-check")
   async checkUser (@Headers('authorization') authorizationHeader: string){
     return this.authServices.getUserWithToken(authorizationHeader)
+  };
+
+
+  @Get('status')
+  @UseGuards(JwtAuthGuard)
+  async status(@Req() req: Request){
+    return req.user
+  };
+
+  @Post('refresh')
+  @UseGuards(RefreshTokenGuard)
+  async refresh(@Req() req: any) {
+    const user = req.user;
+    const newAccessToken = await this.authServices.generateNewAccessToken(user);
+    return { accessToken: newAccessToken };
   }
 
 
-//   @Post('forgetPassword')
-//   async forgetPassword(@Body() UserForgetPassReqDto:UserForgetPassReq ){
 
-//     return this.authServices.forgetPasswordService(UserForgetPassReqDto)
-//   }
 
-//   @Post('resetPassword')
-//   async resetPassword(@Body() UserResetPassReqDto:UserResetPassReq){
-//     return this.authServices.resetPasswordServices(UserResetPassReqDto)
-//   }
 }
