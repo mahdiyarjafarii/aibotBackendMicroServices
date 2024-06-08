@@ -1,13 +1,14 @@
 import { Controller, Get, HttpException, Post,Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq } from './dtos/auth.dto';
-import { Body, Req, UseGuards } from '@nestjs/common/decorators';
-import * as bcrypt from 'bcrypt';
+import { Body, Req, Res, UseGuards } from '@nestjs/common/decorators';
+import { Response } from 'express';
 import { Request } from 'express';
 import { LocalGuard } from './guards/local.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { RefreshTokenGuard } from './guards/refresh.guard';
+import { GoogleOauthGuard } from './guards/google-oauth.guard';
 
 
 @Controller({
@@ -58,7 +59,24 @@ export class AuthController {
     return { accessToken: newAccessToken };
   }
 
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {
+    // Initiates the Google OAuth2 login flow
+  }
 
+  @Get('google/callback')
+  @UseGuards(GoogleOauthGuard)
+  async googleAuthCallback(@Req() req:any, @Res() res: Response) {
+    const FRONTEND_URL ="http://localhost:3000"
+    try {
+      const token = await this.authServices.oAuthLogin(req.user);
+      res.redirect(`${FRONTEND_URL}/oauth?token=${token.jwt}`);
+    
+    } catch (err) {
+      res.status(500).send({ success: false, message: err.message });
+    }
+  }
 
 
 }

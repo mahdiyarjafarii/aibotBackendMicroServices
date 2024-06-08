@@ -5,6 +5,7 @@ import { PrismaModule } from 'src/infrastructure/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
 import { LocalStrategy } from './strategies/local-strategy';
+import { GoogleStrategy } from './strategies/google-oauth.strategy';
 
 
 
@@ -13,11 +14,11 @@ import { LocalStrategy } from './strategies/local-strategy';
   imports: [PrismaModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' }, // Optional: Token expiration time
+      signOptions: { expiresIn: '24h' }, 
     }),
     RedisModule
   ],
-  providers: [AuthService,LocalStrategy],
+  providers: [AuthService,LocalStrategy,GoogleStrategy],
   controllers: [AuthController],
   exports:[AuthService]
 })

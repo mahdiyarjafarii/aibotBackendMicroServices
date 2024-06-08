@@ -94,6 +94,23 @@ export class AuthService {
     };
   }
 
+  async oAuthLogin(user) {
+    if (!user) {
+      throw new Error('User not found!!!');
+    }
+
+    const payload = {
+      username: user.email,
+      sub: {
+        name: user.name,
+      },
+    };
+
+    const jwt = this.jwtService.sign(payload);
+
+    return { jwt };
+  }
+
 
   async generateNewAccessToken(user: any): Promise<string> {
     const payload = {
