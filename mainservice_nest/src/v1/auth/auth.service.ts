@@ -86,6 +86,13 @@ export class AuthService {
         name: user.name,
       },
     };
+    console.log(
+      {
+        ...user,
+        accessToken: this.jwtService.sign(payload),
+        refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      }
+    )
 
     return {
       ...user,
@@ -94,7 +101,7 @@ export class AuthService {
     };
   }
 
-  async oAuthLogin(user) {
+  async oAuthLogin(user:any) {
     if (!user) {
       throw new Error('User not found!!!');
     }
@@ -175,7 +182,6 @@ export class AuthService {
         return null;
       };
 
-      console.log(payload)
       const user = await this.prismaService.users.findUnique({
         where: {
           email: payload.username,
