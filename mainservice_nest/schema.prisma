@@ -33,16 +33,20 @@ model bots {
   status         String   @default("active")
   token_limit    Int      @default(8000000)
   token_limit_pp Int      @default(8000)
+  datasource     datasources
   user           users    @relation(fields: [user_id], references: [user_id])
 }
 
 model datasources {
   datasource_id  String @id @default(uuid())
-  bot_id String   @db.VarChar(255)
-  urls           String @db.VarChar(255)
+  bot_id         String   @db.VarChar(255)
   static_files   Json   @default("{}")
-  instagram_id   String @db.VarChar(255)
+  urls           String @db.VarChar(255)
+  text_input     String @db.VarChar(255)
+  qANDa_input     String @db.VarChar(255)
   knowledge_base Json   @default("{}")
+  total_char     String @db.VarChar(255)
+  bot            bots   @relation(fields: [bot_id], references: [bot_id])
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
