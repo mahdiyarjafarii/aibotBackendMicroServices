@@ -25,9 +25,11 @@ model bots {
   updated_at     DateTime @updatedAt
   type           String
   user_id        String
-  config         Json     @default("{\"ui\": {}, \"system\": \"\", \"has_memory\": false, \"action_btns\": [], \"input_types\": [], \"greet_messages\": [], \"ask_credentials\": {}}")
+  general_configs      Json     @default("{\"has_memory\": false, \"action_btns\": [], \"input_types\": [], \"greet_messages\": [], \"ask_credentials\": {}}")
+  model_configs  Json     @default("{\"neme_model\": \"GPT-3.5Turbo\", \"Temperature\": 0.5}")
+  ui_configs     Json     @default("{\"start_msg\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"suggestion_msg\":[\"چگونه میتونم بات بسازم؟\"],\"placeholder_msg\":\"چگونه میتونم بات بسازم؟\",\"footer_msg\":\"raya.chat\",\"display_name\":\"raya chat\",\"color_msg_user\":\"#ffff\",\"image_bot\":\"https://test.png\",\"color_btn_bot\":\"#FFF\",\"position_bot\":\"left\",\"time_delay_initmsg\":\"20\"}")   
+  security_configs Json   @default("{\"access_bot\":\"private\",\"status_bot\":\"enable\",\"rate_limit_msg\":\"20\",\"rate_limit_time\":\"240\",\"rate_limit_msg_show\":\"تعداد درخواست شما زیاد تر از استاندارد بات می باشد.\"}") 
   evals          Json     @default("{}")
-  model          String?  @default("gpt-3.5-turbo-16k")
   status         String   @default("active")
   token_limit    Int      @default(8000000)
   token_limit_pp Int      @default(8000)
