@@ -52,7 +52,7 @@ model datasources {
 }
 
 model conversations {
-  conversation_id Int       @id @default(autoincrement())
+  conversation_id Int       @id @default(uuid())
   bot_id          String
   created_at      DateTime  @default(now())
   records         records[]

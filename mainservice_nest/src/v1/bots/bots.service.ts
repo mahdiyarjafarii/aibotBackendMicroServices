@@ -17,6 +17,16 @@ export class MyBotsService {
     return createdBot;
   }
 
+  async createConversation(botId: string) {
+    const newConversation = await this.prismaService.conversations.create({
+      data: {
+        bot_id: botId,
+        created_at: new Date(),
+      },
+    });
+    return newConversation;
+  }
+
   async getAllBots(
     pageNumber: number,
     itemsPerPage: number,
@@ -52,14 +62,25 @@ export class MyBotsService {
     let conversations;
 
     if (conversationId) {
-      // Fetch a specific conversation by ID
+      // Fetch a specific conversation by conversation_id and bot_id
       conversations = await this.prismaService.conversation.findFirst({
-        where: { id: conversationId, botId },
+        where: {
+          conversation_id: conversationId,
+          bot_id: botId,
+        },
+        include: {
+          records: true, // Optionally include records if you want to fetch messages as well
+        },
       });
     } else {
       // Fetch all conversations for a bot
       conversations = await this.prismaService.conversation.findMany({
-        where: { botId },
+        where: {
+          bot_id: botId,
+        },
+        include: {
+          records: true, // Optionally include records if you want to fetch messages as well
+        },
       });
     }
 

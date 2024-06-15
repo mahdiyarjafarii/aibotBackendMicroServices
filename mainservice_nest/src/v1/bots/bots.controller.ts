@@ -36,9 +36,15 @@ export class MyBotsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post(':botId/conversations')
+  async createConversation(@Param('botId') botId: string) {
+    return this.mybotsServices.createConversation(botId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':botId/conversations')
   async getBotConversations(@Param('botId') botId: string) {
-    return;
+    return this.mybotsServices.getConversations(botId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -47,6 +53,6 @@ export class MyBotsController {
     @Param('botId') botId: string,
     @Param('conversationId') conversationId: string,
   ) {
-    return;
+    return this.mybotsServices.getConversations(botId, conversationId);
   }
 }
