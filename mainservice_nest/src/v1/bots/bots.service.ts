@@ -7,23 +7,49 @@ export class MyBotsService {
     constructor(
         private readonly prismaService: PrismaService,
     ){}
-  async cretaeBots(
-    {
-        name,
-        type
-    }:BotCreate,
-    user_id:string
-  ){
-    const createdBot= await this.prismaService.bots.create({
-        data:{
-            name,
-            type,
-            user: { connect: { user_id } }
-        }
-    })
 
-    return createdBot
-  }
+
+  async cretaeBots(
+  userId:string
+  ){
+    const persianBotNames = [
+      "هوشمند", "یارا", "پشتیبان", "پردازشگر", "نیک‌یار", "آوا", "ماهور", "آریا", "راهنما", "ساینا",
+      "مهسا", "نوید", "نگهبان", "کاوشگر", "تیرا", "رویا", "کیان", "شبنم", "رایان", "پیشرو"
+    ];
+
+    function getRandomPersianBotName(names: string[]): string {
+      const randomIndex = Math.floor(Math.random() * names.length);
+      return names[randomIndex];
+    }
+
+    try{
+      const randomBotName = getRandomPersianBotName(persianBotNames);
+      const createdBot=await this.prismaService.bots.create({
+        data:{
+          user_id:userId,
+          name: randomBotName
+        }
+      })
+      return createdBot;
+    }catch(error){
+      console.log(error)
+    }
+  };
+
+  async createDataSource(
+    data:any
+  ){
+    try{
+      const createdDataSource=await this.prismaService.datasources.create({
+        data
+      });
+      return createdDataSource;
+
+    }catch(error){
+      console.log(error)
+    }
+  };
+
 
   async getAllBots(
     pageNumber:number

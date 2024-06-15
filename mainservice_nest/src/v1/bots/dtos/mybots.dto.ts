@@ -1,10 +1,21 @@
-import { IsString } from "class-validator";
+import { IsArray, IsOptional, IsString } from "class-validator";
 
 export class BotCreate{
     @IsString()
-    name: string;
+    @IsOptional()
+    text_input?: string;
 
-    @IsString()
-    type : string;
+    @IsArray()
+    @IsOptional()
+    qaList?:string[]
+
+    @IsArray()
+    @IsOptional()
+    urlList?:string[]
+
+
+    // @IsArray()
+    // @IsOptional()
+    // files?: string[];
 
 }
