@@ -36,7 +36,7 @@ model bots {
   datasource       datasources[]
   user             users           @relation(fields: [user_id], references: [user_id])
   conversations    conversations[]
-  records          records[]
+  //records          records[]
 }
 
 model datasources {
@@ -45,15 +45,20 @@ model datasources {
   static_files   Json   @default("{}")
   urls           String @db.VarChar(255)
   text_input     String @db.VarChar(255)
-  qANDa_input    String @db.VarChar(255)
+  qANDa_input    String? @db.VarChar(255)
   knowledge_base Json   @default("{}")
-  total_char     String @db.VarChar(255)
+  total_char     String? @db.VarChar(255)
   bot            bots   @relation(fields: [bot_id], references: [bot_id])
 }
 
 model conversations {
-  conversation_id Int       @id @default(uuid())
+  conversation_id String    @id @default(uuid())
   bot_id          String
+  widget_version  String
+  session_id      String
+  user_ip         String? // Optional field
+  user_location   String? // Optional field
+  metadata        Json? // Optional field
   created_at      DateTime  @default(now())
   records         records[]
   bot             bots      @relation(fields: [bot_id], references: [bot_id])
@@ -61,15 +66,17 @@ model conversations {
 
 model records {
   record_id         String        @id
-  conversation_id   Int
-  bot_id            String
+  conversation_id   String
+  // bot_id            String
   llm_response      String
   user_message      String
+  //current_page    String?    // Optional field - Add it in future
   user_message_time DateTime
   llm_response_time DateTime
-  created_at        DateTime      @default(now())
-  conversation      conversations @relation(fields: [conversation_id], references: [conversation_id])
-  bot               bots          @relation(fields: [bot_id], references: [bot_id])
+  // created_at        DateTime      @default(now())
+  conversations     conversations @relation(fields: [conversation_id], references: [conversation_id])
+  //bot               bots          @relation(fields: [bot_id], references: [bot_id])
+  //bots              bots?         @relation(fields: [botsBot_id], references: [bot_id])
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.

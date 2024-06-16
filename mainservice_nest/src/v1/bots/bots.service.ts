@@ -17,14 +17,40 @@ export class MyBotsService {
     return createdBot;
   }
 
-  async createConversation(botId: string) {
-    const newConversation = await this.prismaService.conversations.create({
-      data: {
-        bot_id: botId,
-        created_at: new Date(),
-      },
-    });
-    return newConversation;
+  async createConversation({
+    botId,
+    widgetVersion,
+    sessionId,
+    userIP,
+    userLocation,
+  }: {
+    botId: string;
+    widgetVersion: string;
+    sessionId: string;
+    userIP: string;
+    userLocation?: string;
+  }): Promise<{ sessionId: string; conversationId: string }> {
+
+    let conversation;
+    try {
+      conversation = await this.prismaService.conversations.create({
+        data: {
+          bot_id: botId,
+          widget_version: widgetVersion,
+          session_id: sessionId,
+          user_ip: userIP,
+          user_location: userLocation,
+          metadata: {}, // Empty object for now
+        },
+      });
+    } catch (error) {
+      console.log('Error creating conversation row:', error);
+    }
+
+    return {
+      sessionId: conversation.session_id,
+      conversationId: conversation.conversation_id,
+    };
   }
 
   async getAllBots(
@@ -63,7 +89,7 @@ export class MyBotsService {
 
     if (conversationId) {
       // Fetch a specific conversation by conversation_id and bot_id
-      conversations = await this.prismaService.conversation.findFirst({
+      conversations = await this.prismaService.conversations.findFirst({
         where: {
           conversation_id: conversationId,
           bot_id: botId,
@@ -74,7 +100,7 @@ export class MyBotsService {
       });
     } else {
       // Fetch all conversations for a bot
-      conversations = await this.prismaService.conversation.findMany({
+      conversations = await this.prismaService.conversations.findMany({
         where: {
           bot_id: botId,
         },

@@ -1,10 +1,21 @@
 import { Controller, Get, HttpException, Post, Headers } from '@nestjs/common';
-import { Body, Param, Query, Req, UseGuards } from '@nestjs/common/decorators';
+import {
+  Body,
+  Ip,
+  Param,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common/decorators';
+import { v4 as uuidv4 } from 'uuid';
 
 import { MyBotsService } from './bots.service';
-import { BotCreate } from './dtos/mybots.dto';
+import { BotCreate, CreateConversationDto } from './dtos/mybots.dto';
 import { JwtAuthGuard } from './guards/auth.guard';
 import { User } from '../decorators/user.decorator';
+import { ChatSessionId } from '../decorators/chatSession.decorator';
+import { Request, Response } from 'express';
 
 @Controller({
   path: 'mybots',
@@ -35,10 +46,35 @@ export class MyBotsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post(':botId/conversations')
-  async createConversation(@Param('botId') botId: string) {
-    return this.mybotsServices.createConversation(botId);
+  async createConversation(
+    @Param('botId') botId: string,
+    @Body() createConversationDto: CreateConversationDto,
+    @ChatSessionId() sessionId: string,
+    @Ip() userIP,
+    @Res() res: Response,
+  ) {
+    const widgetVersion = createConversationDto.widgetVersion;
+    //const userLocation = await this.getUserLocation(userIP); // Function to fetch user location from IP
+
+    let currentSessionId = sessionId;
+    let createConversation: {
+      sessionId: string;
+      conversationId: string;
+    };
+    if (!currentSessionId) {
+      currentSessionId = uuidv4();
+      createConversation = await this.mybotsServices.createConversation({
+        botId,
+        widgetVersion,
+        sessionId: currentSessionId,
+        userIP,
+      });
+      const oneDayMaxAge = 24 * 60 * 60 * 1000;
+      res.cookie('session_id', currentSessionId, { maxAge: oneDayMaxAge });
+    }
+
+    return res.json({ conversationId: createConversation?.conversationId });
   }
 
   @UseGuards(JwtAuthGuard)
