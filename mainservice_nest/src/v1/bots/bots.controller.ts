@@ -19,7 +19,7 @@ import { BotCreate } from './dtos/mybots.dto';
 export class MyBotsController {
   constructor(private readonly mybotsServices:MyBotsService) {}
   @Post('/create')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FilesInterceptor('files', 7, {
       storage: multer.diskStorage({
@@ -84,6 +84,7 @@ export class MyBotsController {
     @Query('type') type?: string,
     @User() user?:any
   ){
+    console.log(user)
     return await this.mybotsServices.getAllBots(pageNumber,itemsPerPage,type,user.user_id)
 
   }

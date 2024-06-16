@@ -7,15 +7,15 @@ export class BotCreate{
 
     @IsArray()
     @IsOptional()
-    qaList?:string[]
+    qANDa_input?:string[]
 
     @IsArray()
     @IsOptional()
-    urlList?:string[]
+    urls?:string[]
 
 
-    // @IsArray()
-    // @IsOptional()
-    // files?: string[];
+    @IsArray()
+    @IsOptional()
+    files?: string[];
 
 }
