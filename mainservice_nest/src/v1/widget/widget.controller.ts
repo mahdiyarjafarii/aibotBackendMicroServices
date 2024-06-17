@@ -1,28 +1,31 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { WidgetService } from './widget.service';
+import {
+  GenerateWidgetTokenDto,
+  GetBotConfigDto,
+  GetCollectionNameDto,
+} from './dtos/widget.dto';
 
 @Controller('widget')
 export class WidgetController {
   constructor(private readonly widgetService: WidgetService) {}
 
   @Post('generate-token')
-  async generateWidgetToken(@Body() body: any) {
+  async generateWidgetToken(@Body() body: GenerateWidgetTokenDto) {
     return this.widgetService.generateWidgetTokenService({
       userId: body.userId,
       botId: body.botId,
     });
   }
-
   @Post('get-collection')
-  async getCollectionName(@Body() body: any) {
+  async getCollectionName(@Body() body: GetCollectionNameDto) {
     return this.widgetService.getCollectionNameService(body.token);
   }
 
   @Get('config')
-  async getBotConfig({ userId, botId }: { userId: string; botId: string }) {
+  async getBotConfig(@Body() body: GetBotConfigDto) {
     return this.widgetService.getBotConfigService({
-      userId,
-      botId,
+      botId: body.botId,
     });
   }
 }

@@ -11,7 +11,7 @@ interface payloadJWT {
 @Injectable()
 export class WidgetService {
   constructor(private readonly prismaService: PrismaService) {}
-  async _decodeWidgetTokenService(token: string) {
+  private async _decodeWidgetTokenService(token: string) {
     try {
       const payload = (await jwt.verify(
         token,
@@ -34,6 +34,20 @@ export class WidgetService {
       return null;
     }
   }
+  private _toCamelCase(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map((v) => this._toCamelCase(v));
+    } else if (obj !== null && obj.constructor === Object) {
+      return Object.keys(obj).reduce((result, key) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, char) =>
+          char.toUpperCase(),
+        );
+        result[camelKey] = this._toCamelCase(obj[key]);
+        return result;
+      }, {} as any);
+    }
+    return obj;
+  }
   async getCollectionNameService(token: string) {
     const decoded = await this._decodeWidgetTokenService(token);
     return {
@@ -55,20 +69,19 @@ export class WidgetService {
 
     return token;
   }
-  async getBotConfigService({
-    userId,
-    botId,
-  }: {
-    userId: string;
-    botId: string;
-  }) {
+  async getBotConfigService({ botId }: { botId: string }) {
     const foundBotConfig = this.prismaService.bots.findFirst({
       where: {
         bot_id: botId,
-        user_id: userId,
+      },
+      select: {
+        general_configs: true,
+        model_configs: true,
+        ui_configs: true,
+        security_configs: true,
       },
     });
 
-    return foundBotConfig;
+    return this._toCamelCase(foundBotConfig);
   }
 }
