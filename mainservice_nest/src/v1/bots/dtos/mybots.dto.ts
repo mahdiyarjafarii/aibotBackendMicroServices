@@ -1,15 +1,23 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsOptional } from 'class-validator';
 
 export class BotCreate {
   @IsString()
-  name: string;
+  @IsOptional()
+  text_input?: string;
 
-  @IsString()
-  type: string;
+  @IsArray()
+  @IsOptional()
+  qANDa_input?: string[];
+
+  @IsArray()
+  @IsOptional()
+  urls?: string[];
+
+  @IsArray()
+  @IsOptional()
+  files?: string[];
 }
-
 export class CreateConversationDto {
-
   @IsString()
   @IsNotEmpty()
   widgetVersion: string;

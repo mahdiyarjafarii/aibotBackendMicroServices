@@ -1,12 +1,13 @@
-import { Controller, Get, HttpException, Post, Headers } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import {
   Body,
   Ip,
   Param,
   Query,
-  Req,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common/decorators';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -17,17 +18,66 @@ import { User } from '../decorators/user.decorator';
 import { ChatSessionId } from '../decorators/chatSession.decorator';
 import { Request, Response } from 'express';
 
+import { FilesInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
+import { cwd } from 'process';
+import { existsSync, mkdirSync, renameSync } from 'fs';
+
 @Controller({
   path: 'mybots',
   version: '1',
 })
 export class MyBotsController {
   constructor(private readonly mybotsServices: MyBotsService) {}
-
-  @UseGuards(JwtAuthGuard)
   @Post('/create')
-  async createBots(@Body() botDTO: BotCreate, @User() user: any) {
-    return await this.mybotsServices.cretaeBots(botDTO, user.user_id);
+  // @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FilesInterceptor('files', 7, {
+      storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+          const destinationPath = `${cwd()}/uploads/tmp`;
+
+          if (!existsSync(destinationPath)) {
+            try {
+              mkdirSync(destinationPath, { recursive: true }); // Ensure parent directories are created
+            } catch (err) {
+              return cb(err);
+            }
+          }
+
+          cb(null, destinationPath);
+        },
+        filename: function (req, file, cb) {
+          cb(null, file.originalname);
+        },
+      }),
+    }),
+  )
+  async createBots(
+    @UploadedFiles() files: any,
+    @Body() botsDTO: BotCreate,
+    @User() user: any,
+  ) {
+    const createdBot = await this.mybotsServices.cretaeBots(user?.user_id);
+    const data = {
+      ...botsDTO,
+      bot_id: createdBot.bot_id,
+    };
+
+    if (files?.length) {
+      renameSync(
+        `${cwd()}/uploads/tmp`,
+        `${cwd()}/uploads/${createdBot.bot_id}`,
+      );
+      const fileUrlPrefix =
+        process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
+      const fileLink = `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${files[0].originalname}`;
+      data['static_files'] = `[${fileLink}]`;
+    }
+
+    const createdDataSource = await this.mybotsServices.createDataSource(data);
+
+    return createdDataSource;
   }
 
   @UseGuards(JwtAuthGuard)
