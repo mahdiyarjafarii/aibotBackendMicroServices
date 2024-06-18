@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { WidgetService } from './widget.service';
 import {
   GenerateWidgetTokenDto,
@@ -6,7 +6,10 @@ import {
   GetCollectionNameDto,
 } from './dtos/widget.dto';
 
-@Controller('widget')
+@Controller({
+  path: 'widget',
+  version: '1',
+})
 export class WidgetController {
   constructor(private readonly widgetService: WidgetService) {}
 
@@ -22,10 +25,10 @@ export class WidgetController {
     return this.widgetService.getCollectionNameService(body.token);
   }
 
-  @Get('config')
-  async getBotConfig(@Body() body: GetBotConfigDto) {
+  @Get('config/:botId')
+  async getBotConfig(@Param('botId') botId: string) {
     return this.widgetService.getBotConfigService({
-      botId: body.botId,
+      botId: botId,
     });
   }
 }

@@ -70,7 +70,7 @@ export class WidgetService {
     return token;
   }
   async getBotConfigService({ botId }: { botId: string }) {
-    const foundBotConfig = this.prismaService.bots.findFirst({
+    const foundBotConfig = await this.prismaService.bots.findFirst({
       where: {
         bot_id: botId,
       },
