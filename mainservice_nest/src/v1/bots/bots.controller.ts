@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, Post,Headers } from '@nestjs/common';
-import { Body, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common/decorators';
+import { Body, Delete, Param, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common/decorators';
 
 import { MyBotsService } from './bots.service';
 
@@ -19,7 +19,7 @@ import { BotCreate } from './dtos/mybots.dto';
 export class MyBotsController {
   constructor(private readonly mybotsServices:MyBotsService) {}
   @Post('/create')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FilesInterceptor('files', 7, {
       storage: multer.diskStorage({
@@ -45,8 +45,9 @@ export class MyBotsController {
     async createBots(
         @UploadedFiles() files: any,
         @Body() botsDTO: BotCreate,
-        @User() user:any
+        @User() user?:any
     ){
+      console.log(user)
     
       const createdBot= await this.mybotsServices.cretaeBots(user?.user_id);
       const data={
@@ -84,9 +85,26 @@ export class MyBotsController {
     @Query('type') type?: string,
     @User() user?:any
   ){
-    console.log(user)
+    console.log(user,"test")
     return await this.mybotsServices.getAllBots(pageNumber,itemsPerPage,type,user.user_id)
 
+  }
+
+
+  
+  @UseGuards(JwtAuthGuard)
+  @Delete('/delete/:bot_id')
+  async deleteBot(@Param('bot_id') botId: string, @User() user: any) {
+    try {
+      const result = await this.mybotsServices.deleteBot(botId, user.user_id);
+      if (result) {
+        return { message: 'Bot deleted successfully' };
+      } else {
+        throw new HttpException('Bot not found or not authorized', 404);
+      }
+    } catch (error) {
+      throw new HttpException('Failed to delete bot', 500);
+    }
   }
 
 

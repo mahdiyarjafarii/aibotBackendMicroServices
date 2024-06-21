@@ -87,4 +87,26 @@ export class MyBotsService {
 
 
   }
+
+  async deleteBot(botId: string, userId: string): Promise<boolean> {
+    try {
+      const bot = await this.prismaService.bots.findFirst({
+        where: { bot_id: botId, user_id: userId },
+      });
+      if (!bot) {
+        return false;
+      }
+
+      await this.prismaService.bots.delete({
+        where: { bot_id: botId },
+      });
+
+    
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
 }
