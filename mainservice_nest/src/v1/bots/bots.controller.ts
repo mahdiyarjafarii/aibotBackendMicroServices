@@ -91,6 +91,21 @@ export class MyBotsController {
   }
 
 
+
+  @UseGuards(JwtAuthGuard)
+  @Get('list/:bot_id')
+  async getBot(@Param('bot_id') botId: string, @User() user: any) {
+    try {
+      const result = await this.mybotsServices.findeBot(botId, user.user_id);
+      if (!result) {
+        throw new HttpException('Bot not found', 404);
+      }
+      return result;
+  
+    } catch (error) {
+      throw new HttpException('Failed to get your bot', 500);
+    }
+  }
   
   @UseGuards(JwtAuthGuard)
   @Delete('/delete/:bot_id')

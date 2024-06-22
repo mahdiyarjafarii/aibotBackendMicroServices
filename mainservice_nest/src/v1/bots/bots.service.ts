@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import { BotCreate } from './dtos/mybots.dto';
 
@@ -109,4 +109,21 @@ export class MyBotsService {
       return false;
     }
   }
+
+  async findeBot(botId: string, userId: string): Promise<any> {
+    try {
+      const bot = await this.prismaService.bots.findFirst({
+        where: { bot_id: botId, user_id: userId },
+      });
+      if (!bot) {
+        throw new HttpException('Bot not found', 404);
+      }
+      return bot;
+    } catch (error) {
+      console.error('Error finding bot:', error);
+      throw new HttpException('Internal Server Error', 500);
+      
+    }
+  }
+
 }
