@@ -48,7 +48,7 @@ model datasources {
   qANDa_input    String? @db.VarChar(255)
   knowledge_base Json?   @default("{}")
   total_char     String? @db.VarChar(255)
-  bot            bots   @relation(fields: [bot_id], references: [bot_id])
+  bot            bots   @relation(fields: [bot_id], references: [bot_id],onDelete: Cascade)
 }
 
 model conversations {

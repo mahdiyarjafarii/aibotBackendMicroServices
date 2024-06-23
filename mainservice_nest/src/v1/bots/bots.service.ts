@@ -1,10 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import { BotCreate } from './dtos/mybots.dto';
 
 @Injectable()
 export class MyBotsService {
   constructor(private readonly prismaService: PrismaService) {}
+
+  private _toCamelCase(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map((v) => this._toCamelCase(v));
+    } else if (obj !== null && obj.constructor === Object) {
+      return Object.keys(obj).reduce((result, key) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, char) =>
+          char.toUpperCase(),
+        );
+        result[camelKey] = this._toCamelCase(obj[key]);
+        return result;
+      }, {} as any);
+    }
+    return obj;
+  }
 
   async cretaeBots(userId: string) {
     const persianBotNames = [
@@ -167,6 +182,41 @@ export class MyBotsService {
       }
     }
 
-    return conversations;
+    return this._toCamelCase(conversations);
+  }
+
+  async deleteBot(botId: string, userId: string): Promise<boolean> {
+    try {
+      const bot = await this.prismaService.bots.findFirst({
+        where: { bot_id: botId, user_id: userId },
+      });
+      if (!bot) {
+        return false;
+      }
+
+      await this.prismaService.bots.delete({
+        where: { bot_id: botId },
+      });
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async findeBot(botId: string, userId: string): Promise<any> {
+    try {
+      const bot = await this.prismaService.bots.findFirst({
+        where: { bot_id: botId, user_id: userId },
+      });
+      if (!bot) {
+        throw new HttpException('Bot not found', 404);
+      }
+      return bot;
+    } catch (error) {
+      console.error('Error finding bot:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
   }
 }

@@ -1,15 +1,16 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, HttpException, Post, Headers } from '@nestjs/common';
 import {
   Body,
+  Delete,
   Ip,
   Param,
   Query,
+  Req,
   Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common/decorators';
-import { v4 as uuidv4 } from 'uuid';
 
 import { MyBotsService } from './bots.service';
 import { BotCreate, CreateConversationDto } from './dtos/mybots.dto';
@@ -22,6 +23,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { cwd } from 'process';
 import { existsSync, mkdirSync, renameSync } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 @Controller({
   path: 'mybots',
@@ -30,7 +32,7 @@ import { existsSync, mkdirSync, renameSync } from 'fs';
 export class MyBotsController {
   constructor(private readonly mybotsServices: MyBotsService) {}
   @Post('/create')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FilesInterceptor('files', 7, {
       storage: multer.diskStorage({
@@ -56,8 +58,10 @@ export class MyBotsController {
   async createBots(
     @UploadedFiles() files: any,
     @Body() botsDTO: BotCreate,
-    @User() user: any,
+    @User() user?: any,
   ) {
+    console.log(user);
+
     const createdBot = await this.mybotsServices.cretaeBots(user?.user_id);
     const data = {
       ...botsDTO,
@@ -88,6 +92,7 @@ export class MyBotsController {
     @Query('type') type?: string,
     @User() user?: any,
   ) {
+    console.log(user, 'test');
     return await this.mybotsServices.getAllBots(
       pageNumber,
       itemsPerPage,
@@ -127,7 +132,7 @@ export class MyBotsController {
     return res.json({ conversationId: createConversation?.conversationId });
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get(':botId/conversations')
   async getBotConversations(@Param('botId') botId: string) {
     return this.mybotsServices.getConversations(botId);
@@ -140,5 +145,34 @@ export class MyBotsController {
     @Param('conversationId') conversationId: string,
   ) {
     return this.mybotsServices.getConversations(botId, conversationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('list/:bot_id')
+  async getBot(@Param('bot_id') botId: string, @User() user: any) {
+    try {
+      const result = await this.mybotsServices.findeBot(botId, user.user_id);
+      if (!result) {
+        throw new HttpException('Bot not found', 404);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException('Failed to get your bot', 500);
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/delete/:bot_id')
+  async deleteBot(@Param('bot_id') botId: string, @User() user: any) {
+    try {
+      const result = await this.mybotsServices.deleteBot(botId, user.user_id);
+      if (result) {
+        return { message: 'Bot deleted successfully' };
+      } else {
+        throw new HttpException('Bot not found or not authorized', 404);
+      }
+    } catch (error) {
+      throw new HttpException('Failed to delete bot', 500);
+    }
   }
 }
