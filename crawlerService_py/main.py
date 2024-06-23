@@ -83,7 +83,7 @@ def consume_urls(consumer, topic):
 
 
 if __name__ == "__main__":
-    database_instance.connect();
+    database_instance.connect()
 
     # data = database_instance.fetch_data("SELECT * FROM BOTS;");
     # for row in data:
