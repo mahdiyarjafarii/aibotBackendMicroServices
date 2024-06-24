@@ -19,22 +19,24 @@ model users {
 }
 
 model bots {
-  bot_id           String      @id @default(uuid())
-  name             String      @db.VarChar(255)
-  created_at       DateTime    @default(now())
-  updated_at       DateTime    @updatedAt
+  bot_id           String          @id @default(uuid())
+  name             String          @db.VarChar(255)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
   type             String?      @default("website")
   user_id          String
-  general_configs  Json?        @default("{\"has_memory\": false}")
-  model_configs    Json?        @default("{\"model_name\": \"GPT-3.5Turbo\", \"Temperature\": 0.5}")
-  ui_configs     Json?     @default("{\"greet_msgs\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"notification_msgs\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"action_btns\":[\"چگونه میتونم بات بسازم؟\"],\"placeholder_msg\":\"چگونه میتونم بات بسازم؟\",\"input_types\": [],\"ask_credentials\": {},\"footer_msg\":\"raya.chat\",\"bot_name\":\"raya chat\",\"user_msg_bg_color\":\"#ffff\",\"bot_image\":\"https://test.png\",\"bot_widget_bg_color\":\"#FFF\",\"bot_widget_position\":\"left\",\"init_msg_delay\":\"20\"}")   
-  security_configs Json?        @default("{\"access_bot\":\"private\",\"status_bot\":\"enable\",\"rate_limit_msg\":\"20\",\"rate_limit_time\":\"240\",\"rate_limit_msg_show\":\"تعداد درخواست شما زیاد تر از استاندارد بات می باشد.\"}")
-  evals            Json?        @default("{}")
-  status           String?      @default("active")
-  token_limit      Int?         @default(8000000)
-  token_limit_pp   Int?         @default(8000)
+  general_configs  Json            @default("{\"has_memory\": false}")
+  model_configs    Json            @default("{\"model_name\": \"GPT-3.5Turbo\", \"Temperature\": 0.5}")
+  ui_configs       Json            @default("{\"greet_msgs\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"notification_msgs\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"action_btns\":[\"چگونه میتونم بات بسازم؟\"],\"placeholder_msg\":\"چگونه میتونم بات بسازم؟\",\"input_types\": [],\"ask_credentials\": {},\"footer_msg\":\"raya.chat\",\"bot_name\":\"raya chat\",\"user_msg_bg_color\":\"#ffff\",\"bot_image\":\"https://test.png\",\"bot_widget_bg_color\":\"#FFF\",\"bot_widget_position\":\"left\",\"init_msg_delay\":\"20\"}")
+  security_configs Json            @default("{\"access_bot\":\"private\",\"status_bot\":\"enable\",\"rate_limit_msg\":\"20\",\"rate_limit_time\":\"240\",\"rate_limit_msg_show\":\"تعداد درخواست شما زیاد تر از استاندارد بات می باشد.\"}")
+  evals            Json            @default("{}")
+  status           String          @default("active")
+  token_limit      Int             @default(8000000)
+  token_limit_pp   Int             @default(8000)
   datasource       datasources[]
-  user             users       @relation(fields: [user_id], references: [user_id])
+  user             users           @relation(fields: [user_id], references: [user_id])
+  conversations    conversations[]
+  //records          records[]
 }
 
 model datasources {
@@ -47,6 +49,34 @@ model datasources {
   knowledge_base Json?   @default("{}")
   total_char     String? @db.VarChar(255)
   bot            bots   @relation(fields: [bot_id], references: [bot_id],onDelete: Cascade)
+}
+
+model conversations {
+  conversation_id String    @id @default(uuid())
+  bot_id          String
+  widget_version  String
+  session_id      String
+  user_ip         String? // Optional field
+  user_location   String? // Optional field
+  metadata        Json? // Optional field
+  created_at      DateTime  @default(now())
+  records         records[]
+  bot             bots      @relation(fields: [bot_id], references: [bot_id])
+}
+
+model records {
+  record_id         String        @id
+  conversation_id   String
+  // bot_id            String
+  llm_response      String
+  user_message      String
+  //current_page    String?    // Optional field - Add it in future
+  user_message_time DateTime
+  llm_response_time DateTime
+  // created_at        DateTime      @default(now())
+  conversations     conversations @relation(fields: [conversation_id], references: [conversation_id])
+  //bot               bots          @relation(fields: [bot_id], references: [bot_id])
+  //bots              bots?         @relation(fields: [botsBot_id], references: [bot_id])
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.

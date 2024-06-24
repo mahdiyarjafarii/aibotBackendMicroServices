@@ -21,7 +21,7 @@ import { WidgetModule } from './v1/widget/widget.module';
     MyBotsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ChatModule,
-    // WidgetModule,
+    WidgetModule,
     {
       ...HttpModule.register({
         timeout: 15000,
