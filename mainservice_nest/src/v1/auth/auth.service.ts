@@ -174,6 +174,7 @@ export class AuthService {
   //   }
 
   async getUserWithToken(token: string): Promise<UserEntity | undefined> {
+    console.log(token)
     try {
       const payload = (await this.jwtService.verify(
         token

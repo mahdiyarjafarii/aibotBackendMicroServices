@@ -14,7 +14,7 @@ import {
 
 import { MyBotsService } from './bots.service';
 import { BotCreate, CreateConversationDto } from './dtos/mybots.dto';
-import { JwtAuthGuard } from './guards/auth.guard';
+
 import { User } from '../decorators/user.decorator';
 import { ChatSessionId } from '../decorators/chatSession.decorator';
 import { Request, Response } from 'express';
@@ -24,6 +24,7 @@ import * as multer from 'multer';
 import { cwd } from 'process';
 import { existsSync, mkdirSync, renameSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller({
   path: 'mybots',
@@ -60,7 +61,7 @@ export class MyBotsController {
     @Body() botsDTO: BotCreate,
     @User() user?: any,
   ) {
-    console.log(user);
+    ;
 
     const createdBot = await this.mybotsServices.cretaeBots(user?.user_id);
     const data = {
@@ -84,15 +85,14 @@ export class MyBotsController {
     return createdDataSource;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('/list')
+  @UseGuards(JwtAuthGuard)
   async getAllBots(
     @Query('page') pageNumber?: number,
     @Query('itemsPerPage') itemsPerPage?: number,
     @Query('type') type?: string,
     @User() user?: any,
   ) {
-    console.log(user, 'test');
     return await this.mybotsServices.getAllBots(
       pageNumber,
       itemsPerPage,
