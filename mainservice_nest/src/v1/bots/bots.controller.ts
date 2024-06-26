@@ -99,6 +99,21 @@ export class MyBotsController {
       type,
       user.user_id,
     );
+  };
+
+  @Get('/dataSource/:bot_id')
+  @UseGuards(JwtAuthGuard)
+  async getDataSourceBot(@Param('bot_id') botId: string,@User() user: any){
+    try {
+      const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
+      if (!result) {
+        throw new HttpException('DataSource not found ...', 404);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException('Failed to get your DataSource', 500);
+    }
+
   }
 
   @Post(':botId/conversations')
@@ -150,6 +165,7 @@ export class MyBotsController {
   @UseGuards(JwtAuthGuard)
   @Get('list/:bot_id')
   async getBot(@Param('bot_id') botId: string, @User() user: any) {
+    console.log("twstt")
     try {
       const result = await this.mybotsServices.findeBot(botId, user.user_id);
       if (!result) {

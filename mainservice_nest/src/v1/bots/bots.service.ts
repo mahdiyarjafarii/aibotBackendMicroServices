@@ -243,4 +243,32 @@ export class MyBotsService {
       throw new HttpException('Internal Server Error', 500);
     }
   }
+
+  async findeDataSource(botId: string,userId: string): Promise<any> {
+    try {
+      const dataSource = await this.prismaService.datasources.findFirst({
+        where: { bot_id: botId },
+        include: {
+          bot: {
+            select: {
+              user_id: true,
+            },
+          },
+        },
+      });
+      if (!dataSource) {
+        throw new HttpException('datasource not found', 404);
+      };
+      if (dataSource.bot.user_id !== userId) {
+        throw new HttpException('Unauthorized', 403);
+      }
+      return dataSource;
+    } catch (error) {
+      console.error('Error finding datasource:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  };
+
+  
 }
+
