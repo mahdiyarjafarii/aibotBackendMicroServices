@@ -23,14 +23,14 @@ model bots {
   name             String          @db.VarChar(255)
   created_at       DateTime        @default(now())
   updated_at       DateTime        @updatedAt
-  type             String?      @default("website")
+  type             String?         @default("website")
   user_id          String
   general_configs  Json            @default("{\"has_memory\": false}")
   model_configs    Json            @default("{\"model_name\": \"GPT-3.5Turbo\", \"Temperature\": 0.5}")
-  ui_configs       Json            @default("{\"greet_msgs\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"notification_msgs\":[\"سلام ! امروز چطور می‌توانم به شما کمک کنم؟\"],\"action_btns\":[\"چگونه میتونم بات بسازم؟\"],\"placeholder_msg\":\"چگونه میتونم بات بسازم؟\",\"input_types\": [],\"ask_credentials\": {},\"footer_msg\":\"raya.chat\",\"bot_name\":\"raya chat\",\"user_msg_bg_color\":\"#ffff\",\"bot_image\":\"https://test.png\",\"bot_widget_bg_color\":\"#FFF\",\"bot_widget_position\":\"left\",\"init_msg_delay\":\"20\"}")
-  security_configs Json            @default("{\"access_bot\":\"private\",\"status_bot\":\"enable\",\"rate_limit_msg\":\"20\",\"rate_limit_time\":\"240\",\"rate_limit_msg_show\":\"تعداد درخواست شما زیاد تر از استاندارد بات می باشد.\"}")
+  ui_configs       Json           
+  security_configs Json            
   evals            Json            @default("{}")
-  status           String          @default("active")
+  status           String          @default("notActive")
   token_limit      Int             @default(8000000)
   token_limit_pp   Int             @default(8000)
   datasource       datasources[]

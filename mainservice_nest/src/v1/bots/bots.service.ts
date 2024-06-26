@@ -44,11 +44,33 @@ export class MyBotsService {
       'رایان',
       'پیشرو',
     ];
+    const uiConfigs = {
+      greet_msgs: ["سلام ! امروز چطور می‌توانم به شما کمک کنم؟"],
+      notification_msgs: ["سلام ! امروز چطور می‌توانم به شما کمک کنم؟"],
+      action_btns: ["چگونه میتونم بات بسازم؟"],
+      placeholder_msg: "چگونه میتونم بات بسازم؟",
+      input_types: [],
+      ask_credentials: {},
+      footer_msg: "raya.chat",
+      bot_name: "raya chat",
+      user_msg_bg_color: "#ffff",
+      bot_image: "https://test.png",
+      bot_widget_bg_color: "#FFF",
+      bot_widget_position: "left",
+      init_msg_delay: "20",
+    };
+    const securityConfigs = {
+      access_bot: "private",
+      status_bot: "enable",
+      rate_limit_msg: "20",
+      rate_limit_time: "240",
+      rate_limit_msg_show: "تعداد درخواست شما زیاد تر از استاندارد بات می باشد.",
+    };
 
     function getRandomPersianBotName(names: string[]): string {
       const randomIndex = Math.floor(Math.random() * names.length);
       return names[randomIndex];
-    }
+    };
 
     try {
       const randomBotName = getRandomPersianBotName(persianBotNames);
@@ -56,6 +78,8 @@ export class MyBotsService {
         data: {
           user_id: userId,
           name: randomBotName,
+          ui_configs: uiConfigs,
+          security_configs: securityConfigs,
         },
       });
       return createdBot;
