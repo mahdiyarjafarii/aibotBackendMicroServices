@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common/decorators';
 
 import { MyBotsService } from './bots.service';
-import { BotCreate, CreateConversationDto } from './dtos/mybots.dto';
+import { BotCreate, BotUpdateDataSource, CreateConversationDto } from './dtos/mybots.dto';
 
 import { User } from '../decorators/user.decorator';
 import { ChatSessionId } from '../decorators/chatSession.decorator';
@@ -22,7 +22,7 @@ import { Request, Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { cwd } from 'process';
-import { existsSync, mkdirSync, renameSync } from 'fs';
+import { existsSync, mkdirSync, renameSync, unlinkSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
@@ -83,7 +83,9 @@ export class MyBotsController {
     const createdDataSource = await this.mybotsServices.createDataSource(data);
 
     return createdDataSource;
-  }
+  };
+
+
 
   @Get('/list')
   @UseGuards(JwtAuthGuard)
@@ -100,6 +102,83 @@ export class MyBotsController {
       user.user_id,
     );
   };
+  
+
+  @Post("/dataSource/update/:bot_id")
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FilesInterceptor('files', 7, {
+      storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+          const destinationPath = `${cwd()}/uploads/tmp`;
+
+          if (!existsSync(destinationPath)) {
+            try {
+              mkdirSync(destinationPath, { recursive: true }); // Ensure parent directories are created
+            } catch (err) {
+              return cb(err);
+            }
+          }
+
+          cb(null, destinationPath);
+        },
+        filename: function (req, file, cb) {
+          cb(null, file.originalname);
+        },
+      }),
+    }),
+  )
+  async updateDataSource(
+    @UploadedFiles() files: any,
+    @Body() botsDTO: BotUpdateDataSource,
+    @User() user?: any,
+    @Param('bot_id') botId?:string
+  ){
+    const { uploadedFile } = botsDTO;
+    // step 1 (check file delted ):
+
+        // for (const file of uploadedFile) {
+        //   const { url, fileName, remove } = file;
+    
+        //   // Check if file needs to be removed
+        //   if (remove && remove === true) {
+        //     try {
+        //       // Construct the file path
+        //       const filePath = `${cwd()}/uploads/${user.user_id}/${fileName}`;
+    
+        //       // Check if file exists and delete it
+        //       if (existsSync(filePath)) {
+        //         unlinkSync(filePath);
+        //       }
+        //     } catch (error) {
+        //       throw new HttpException(`Failed to delete file ${fileName}`, 500);
+        //     }
+        //   }
+        // };
+        const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
+        let static_files = result.static_files ? result.static_files.split(','):[]
+        static_files = static_files.map(url => {
+          // const uploaded:any = uploadedFile.find((upFile:any) => upFile.url === url);
+
+          // if(uploaded.remove){
+          //   return;
+          // }else{
+          //   return url
+          // }
+          console.log(url)
+     
+        });
+       
+     
+  
+
+
+
+
+
+
+  }
+
 
   @Get('/dataSource/:bot_id')
   @UseGuards(JwtAuthGuard)

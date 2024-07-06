@@ -42,7 +42,7 @@ model bots {
 model datasources {
   datasource_id  String @id @default(uuid())
   bot_id         String 
-  static_files   String?   @default("[]")
+  static_files   Json?   @default("[]")
   urls           String? @default("[]")
   text_input     String? @db.VarChar(255)
   qANDa_input    String? @db.VarChar(255)
