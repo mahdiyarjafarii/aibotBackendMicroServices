@@ -37,7 +37,7 @@ export class BotUpdateDataSource {
 
   @IsArray()
   @IsOptional()
-  uploadedFile?: [];
+  uploadedFile?:any;
 }
 export class CreateConversationDto {
   @IsString()

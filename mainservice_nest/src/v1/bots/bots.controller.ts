@@ -22,7 +22,7 @@ import { Request, Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { cwd } from 'process';
-import { existsSync, mkdirSync, renameSync, unlinkSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, unlinkSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
@@ -76,8 +76,8 @@ export class MyBotsController {
       );
       const fileUrlPrefix =
         process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
-      const fileLink = `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${files[0].originalname}`;
-      data['static_files'] = `[${fileLink}]`;
+        const fileLinks = files.map(file => `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${file.originalname}`);
+        data['static_files'] = fileLinks;
     }
 
     const createdDataSource = await this.mybotsServices.createDataSource(data);
@@ -134,49 +134,67 @@ export class MyBotsController {
     @User() user?: any,
     @Param('bot_id') botId?:string
   ){
-    const { uploadedFile } = botsDTO;
+
+    const data = {
+      ...botsDTO
+    };
+    
+    let uploadedFile= JSON.parse(botsDTO.uploadedFile) 
     // step 1 (check file delted ):
-
-        // for (const file of uploadedFile) {
-        //   const { url, fileName, remove } = file;
+        for (const file of uploadedFile) {
+          const { url, fileName, remove } = file;
+          
+          // // Check if file needs to be removed
+          if (remove && remove === "true") {
+            try {
+              // Construct the file path
+              const filePath = `${cwd()}/uploads/${botId}/${fileName}`;
     
-        //   // Check if file needs to be removed
-        //   if (remove && remove === true) {
-        //     try {
-        //       // Construct the file path
-        //       const filePath = `${cwd()}/uploads/${user.user_id}/${fileName}`;
-    
-        //       // Check if file exists and delete it
-        //       if (existsSync(filePath)) {
-        //         unlinkSync(filePath);
-        //       }
-        //     } catch (error) {
-        //       throw new HttpException(`Failed to delete file ${fileName}`, 500);
-        //     }
-        //   }
-        // };
+              // Check if file exists and delete it
+              if (existsSync(filePath)) {
+                unlinkSync(filePath);
+              }
+            } catch (error) {
+              throw new HttpException(`Failed to delete file ${fileName}`, 500);
+            }
+          }
+        };
         const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
-        let static_files = result.static_files ? result.static_files.split(','):[]
+        let static_files = JSON.parse(result.static_files)  
         static_files = static_files.map(url => {
-          // const uploaded:any = uploadedFile.find((upFile:any) => upFile.url === url);
-
-          // if(uploaded.remove){
-          //   return;
-          // }else{
-          //   return url
-          // }
-          console.log(url)
+          const uploaded:any = uploadedFile.find((upFile:any) => upFile.url === url);
+          if(uploaded.remove == "true"){
+            return;
+          }else{
+            return url
+          }
      
         });
+
+        if (files?.length) {
+          const targetDir = `${cwd()}/uploads/${botId}`;
+          if (!existsSync(targetDir)) {
+            mkdirSync(targetDir, { recursive: true });
+          }
+          
+          const tempDir = `${cwd()}/uploads/tmp`;
+          const tempFiles = readdirSync(tempDir);
+      
+          for (const file of tempFiles) {
+            const tempFilePath = `${tempDir}/${file}`;
+            const targetFilePath = `${targetDir}/${file}`;
+            copyFileSync(tempFilePath, targetFilePath);
+            unlinkSync(tempFilePath); 
+          };
+
+          const fileUrlPrefix =
+          process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
+          const fileLinks = files.map(file => `${fileUrlPrefix}/uploads/${botId}/${file.originalname}`);
+          data['static_files'] = [...static_files,...fileLinks]
+
+        }
+
        
-     
-  
-
-
-
-
-
-
   }
 
 
