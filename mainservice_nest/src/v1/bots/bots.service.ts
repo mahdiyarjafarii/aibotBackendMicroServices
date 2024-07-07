@@ -123,6 +123,21 @@ export class MyBotsService {
     };
   }
 
+  async updateDataSource(data: any,dataSourceId:string) {
+    try {
+      const createdDataSource = await this.prismaService.datasources.update({
+       where:{
+        datasource_id:dataSourceId
+       },
+       data:data
+      });
+      return createdDataSource;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
   async createDataSource(data: any) {
     try {
       const createdDataSource = await this.prismaService.datasources.create({

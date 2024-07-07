@@ -22,7 +22,7 @@ import { Request, Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { cwd } from 'process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, unlinkSync } from 'fs';
+import { chownSync, copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmdirSync, unlinkSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
@@ -135,17 +135,24 @@ export class MyBotsController {
     @Param('bot_id') botId?:string
   ){
 
-    const data = {
-      ...botsDTO
-    };
-    
-    let uploadedFile= JSON.parse(botsDTO.uploadedFile) 
+    const { uploadedFile: uploadedFileStr, ...data } = botsDTO;
+   
+    const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
+    let static_files = result.static_files;
+     data['static_files']=static_files;
+
     // step 1 (check file delted ):
+    let uploadedFile = [];
+       if (botsDTO.uploadedFile) {
+          uploadedFile = JSON.parse(botsDTO.uploadedFile);
+          console.log(uploadedFile)
+      }
+      if(uploadedFile.length > 0){
         for (const file of uploadedFile) {
           const { url, fileName, remove } = file;
           
           // // Check if file needs to be removed
-          if (remove && remove === "true") {
+          if (remove === "true" || remove==true) {
             try {
               // Construct the file path
               const filePath = `${cwd()}/uploads/${botId}/${fileName}`;
@@ -159,19 +166,16 @@ export class MyBotsController {
             }
           }
         };
-        const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
-        let static_files = JSON.parse(result.static_files)  
-        static_files = static_files.map(url => {
-          const uploaded:any = uploadedFile.find((upFile:any) => upFile.url === url);
-          if(uploaded.remove == "true"){
-            return;
-          }else{
-            return url
-          }
-     
+        data['static_files'] = static_files.filter(url => {
+          const uploaded = uploadedFile.find(upFile => upFile.url === url);
+          return !(uploaded && (uploaded.remove == "true" || uploaded.remove == true));
         });
 
-        if (files?.length) {
+      }
+ 
+
+
+        if (files?.length > 0) {
           const targetDir = `${cwd()}/uploads/${botId}`;
           if (!existsSync(targetDir)) {
             mkdirSync(targetDir, { recursive: true });
@@ -187,12 +191,18 @@ export class MyBotsController {
             unlinkSync(tempFilePath); 
           };
 
+         rmdirSync(tempDir, { recursive: true });
+
           const fileUrlPrefix =
           process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
           const fileLinks = files.map(file => `${fileUrlPrefix}/uploads/${botId}/${file.originalname}`);
-          data['static_files'] = [...static_files,...fileLinks]
+          data['static_files'] = [...data['static_files'],...fileLinks]
 
-        }
+        };
+       
+     
+        const updatedDataSource=await this.mybotsServices.updateDataSource(data,result.datasource_id);
+        return updatedDataSource;
 
        
   }
