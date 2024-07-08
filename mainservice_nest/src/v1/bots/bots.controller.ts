@@ -25,6 +25,7 @@ import { cwd } from 'process';
 import { chownSync, copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmdirSync, unlinkSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { error } from 'console';
 
 @Controller({
   path: 'mybots',
@@ -61,7 +62,21 @@ export class MyBotsController {
     @Body() botsDTO: BotCreate,
     @User() user?: any,
   ) {
-    ;
+    if (typeof botsDTO.urls === 'string') {
+      try {
+        botsDTO.urls = JSON.parse(botsDTO.urls);
+      } catch (err) {
+        throw new error('Invalid JSON format for urls');
+      }
+    };
+
+    if (typeof botsDTO.qANDa_input === 'string') {
+      try {
+        botsDTO.qANDa_input = JSON.parse(botsDTO.qANDa_input);
+      } catch (err) {
+        throw new error('Invalid JSON format for urls');
+      }
+    }
 
     const createdBot = await this.mybotsServices.cretaeBots(user?.user_id);
     const data = {
@@ -133,9 +148,27 @@ export class MyBotsController {
     @Body() botsDTO: BotUpdateDataSource,
     @User() user?: any,
     @Param('bot_id') botId?:string
+    
   ){
+    if (typeof botsDTO.urls === 'string') {
+      try {
+        botsDTO.urls = JSON.parse(botsDTO.urls);
+      } catch (err) {
+        throw new error('Invalid JSON format for urls');
+      }
+    };
+
+    if (typeof botsDTO.qANDa_input === 'string') {
+      try {
+        botsDTO.qANDa_input = JSON.parse(botsDTO.qANDa_input);
+      } catch (err) {
+        throw new error('Invalid JSON format for urls');
+      }
+    };
+
 
     const { uploadedFile: uploadedFileStr, ...data } = botsDTO;
+    console.log(data)
    
     const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
     let static_files = result.static_files;

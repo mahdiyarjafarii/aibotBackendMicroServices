@@ -25,7 +25,7 @@ export class BotUpdateDataSource {
 
   @IsArray()
   @IsOptional()
-  qANDa_input?: string[];
+  qANDa_input?: [];
 
   @IsArray()
   @IsOptional()

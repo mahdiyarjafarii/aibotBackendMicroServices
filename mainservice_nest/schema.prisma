@@ -43,9 +43,9 @@ model datasources {
   datasource_id  String @id @default(uuid())
   bot_id         String 
   static_files   Json?   @default("[]")
-  urls           String? @default("[]")
-  text_input     String? @db.VarChar(255)
-  qANDa_input    String? @db.VarChar(255)
+  urls           Json?  @default("[]")
+  text_input     String?   @default("") @db.VarChar(255)
+  qANDa_input    Json?  @default("[]")
   knowledge_base Json?   @default("{}")
   total_char     String? @db.VarChar(255)
   bot            bots   @relation(fields: [bot_id], references: [bot_id],onDelete: Cascade)
