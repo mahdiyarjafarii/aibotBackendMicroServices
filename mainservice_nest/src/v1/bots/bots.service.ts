@@ -203,6 +203,9 @@ export class MyBotsService {
         include: {
           records: true, // Optionally include records if you want to fetch messages as well
         },
+        orderBy: {
+          created_at: 'desc', // Replace 'createdAt' with the appropriate timestamp field
+      },
       });
     }
 
