@@ -287,6 +287,36 @@ export class MyBotsService {
     }
   };
 
+  async findeConfigs(botId: string,userId: string): Promise<any> {
+    try {
+      const configs = await this.prismaService.bots.findFirst({
+        where: { bot_id: botId },
+        select: {
+          bot_id: true,
+          name: true,
+          created_at: true,
+          updated_at: true,
+          type: true,
+          general_configs: true,
+          model_configs: true,
+          ui_configs: true,
+          security_configs: true,
+          evals: true,
+          status: true,
+      },
+      });
+      if (!configs) {
+        throw new HttpException('datasource not found', 404);
+      };
+  
+      return configs;
+    } catch (error) {
+      console.error('Error finding Configs:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  };
+
+
   
 }
 

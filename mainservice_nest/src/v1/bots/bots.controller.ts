@@ -254,7 +254,22 @@ export class MyBotsController {
       throw new HttpException('Failed to get your DataSource', 500);
     }
 
-  }
+  };
+
+  @Get('/configs/:bot_id')
+  @UseGuards(JwtAuthGuard)
+  async getCinfigsBot(@Param('bot_id') botId: string,@User() user: any){
+    try {
+      const result = await this.mybotsServices.findeConfigs(botId,user.user_id);
+      if (!result) {
+        throw new HttpException('configs not found ...', 404);
+      }
+      return result;
+    } catch (error) {
+      throw new HttpException('Failed to get your configs', 500);
+    }
+
+  };
 
   @Post(':botId/conversations')
   async createConversation(
