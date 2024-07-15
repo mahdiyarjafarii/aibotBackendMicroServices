@@ -48,21 +48,21 @@ export class MyBotsService {
       greet_msgs: ["سلام ! امروز چطور می‌توانم به شما کمک کنم؟"],
       notification_msgs: ["سلام ! امروز چطور می‌توانم به شما کمک کنم؟"],
       action_btns: ["چگونه میتونم بات بسازم؟"],
-      placeholder_msg: "چگونه میتونم بات بسازم؟",
+      placeholder_msg: "پیام شما ...",
       input_types: [],
       ask_credentials: {},
-      footer_msg: "raya.chat",
+      footer_msg: "hamyar.chat",
       bot_name: "raya chat",
-      user_msg_bg_color: "#ffff",
+      user_msg_bg_color: "#3b81f6",
       bot_image: "https://test.png",
-      bot_widget_bg_color: "#FFF",
-      bot_widget_position: "left",
-      init_msg_delay: "20",
+      bot_widget_border_color: "#6495ed",
+      bot_widget_position: "start",
+      init_msg_delay: 20,
     };
     const securityConfigs = {
       access_bot: "private",
       status_bot: "enable",
-      rate_limit_msg: "20",
+      rate_limit_msg: 20,
       rate_limit_time: "240",
       rate_limit_msg_show: "تعداد درخواست شما زیاد تر از استاندارد بات می باشد.",
     };
@@ -312,6 +312,77 @@ export class MyBotsService {
       return configs;
     } catch (error) {
       console.error('Error finding Configs:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  };
+
+  async updateGeneralConfig(botId: string, userId: string, updateData: { name: string }): Promise<any> {
+    try {
+      const updatedConfig = await this.prismaService.bots.update({
+        where: { bot_id: botId, user_id: userId },
+        data: {
+          name: updateData.name,
+        },
+      });
+      if (!updatedConfig) {
+        throw new HttpException('Update failed', 404);
+      }
+      return updatedConfig;
+    } catch (error) {
+      console.error('Error updating Configs:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  };
+
+  async updateModelConfig(botId: string, userId: string, updateData:{ model_name: string,Temperature:number } ): Promise<any> {
+    try {
+      const updatedConfig = await this.prismaService.bots.update({
+        where: { bot_id: botId, user_id: userId },
+        data: {
+          model_configs:updateData
+        },
+      });
+      if (!updatedConfig) {
+        throw new HttpException('Update failed', 404);
+      }
+      return updatedConfig;
+    } catch (error) {
+      console.error('Error updating Configs:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  };
+
+  async updateUiConfig(botId: string, userId: string, updateData:any ): Promise<any> {
+    try {
+      const updatedConfig = await this.prismaService.bots.update({
+        where: { bot_id: botId, user_id: userId },
+        data: {
+         ui_configs:updateData
+        },
+      });
+      if (!updatedConfig) {
+        throw new HttpException('Update failed', 404);
+      }
+      return updatedConfig;
+    } catch (error) {
+      console.error('Error updating Configs:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  };
+  async updateSecurityConfig(botId: string, userId: string, updateData:any ): Promise<any> {
+    try {
+      const updatedConfig = await this.prismaService.bots.update({
+        where: { bot_id: botId, user_id: userId },
+        data: {
+         security_configs:updateData
+        },
+      });
+      if (!updatedConfig) {
+        throw new HttpException('Update failed', 404);
+      }
+      return updatedConfig;
+    } catch (error) {
+      console.error('Error updating Configs:', error);
       throw new HttpException('Internal Server Error', 500);
     }
   };

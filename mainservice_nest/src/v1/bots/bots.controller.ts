@@ -271,6 +271,78 @@ export class MyBotsController {
 
   };
 
+@Post('/configs/updateGeneral/:bot_id')
+@UseGuards(JwtAuthGuard)
+async updateGeneralConfig(
+  @Param('bot_id') botId: string,
+  @User() user: any,
+  @Body() updateData: { name: string },
+) {
+  try {
+    const result = await this.mybotsServices.updateGeneralConfig(botId, user.user_id, updateData);
+    if (!result) {
+      throw new HttpException('Update failed', 404);
+    }
+    return result;
+  } catch (error) {
+    throw new HttpException('Failed to update your configs', 500);
+  }
+};
+
+@Post('/configs/updateModel/:bot_id')
+@UseGuards(JwtAuthGuard)
+async updateModelConfig(
+  @Param('bot_id') botId: string,
+  @User() user: any,
+  @Body() updateData: { model_name: string,Temperature:number },
+) {
+  try {
+    const result = await this.mybotsServices.updateModelConfig(botId, user.user_id, updateData);
+    if (!result) {
+      throw new HttpException('Update failed', 404);
+    }
+    return result;
+  } catch (error) {
+    throw new HttpException('Failed to update your configs', 500);
+  }
+};
+
+@Post('/configs/updateUi/:bot_id')
+@UseGuards(JwtAuthGuard)
+async updateUiConfig(
+  @Param('bot_id') botId: string,
+  @User() user: any,
+  @Body() updateData:any,
+) {
+  try {
+    const result = await this.mybotsServices.updateUiConfig(botId, user.user_id, updateData);
+    if (!result) {
+      throw new HttpException('Update failed', 404);
+    }
+    return result;
+  } catch (error) {
+    throw new HttpException('Failed to update your configs', 500);
+  }
+};
+@Post('/configs/updateSecurity/:bot_id')
+@UseGuards(JwtAuthGuard)
+async updateSecurityConfig(
+  @Param('bot_id') botId: string,
+  @User() user: any,
+  @Body() updateData:any,
+) {
+  try {
+    const result = await this.mybotsServices.updateSecurityConfig(botId, user.user_id, updateData);
+    if (!result) {
+      throw new HttpException('Update failed', 404);
+    }
+    return result;
+  } catch (error) {
+    throw new HttpException('Failed to update your configs', 500);
+  }
+};
+
+
   @Post(':botId/conversations')
   async createConversation(
     @Param('botId') botId: string,
