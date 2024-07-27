@@ -30,17 +30,24 @@ export class AuthController {
 
   @Post('register')
   async signUpUser(@Body() userCreatDTO: UserCreateReq) {
-    const existingUser = await this.authServices.findeByEmail(
-      userCreatDTO.email,
-    );
-
-    if (existingUser) {
-      throw new HttpException('Email already registered', 401);
-    }
-
-    const userCreated = await this.authServices.creatUser(userCreatDTO);
+    try {
+      const existingUser = await this.authServices.findeByEmail(
+        userCreatDTO.email,
+      );
   
-    return userCreated;
+      if (existingUser) {
+        console.log("here")
+        throw new HttpException('Email already registered', 401);
+      }
+  
+      const userCreated = await this.authServices.creatUser(userCreatDTO);
+    
+      return userCreated;
+    }catch(error){
+      console.error(error);
+     throw new HttpException('Internal Server Error', 500);
+    }
+   
   }
 
 
