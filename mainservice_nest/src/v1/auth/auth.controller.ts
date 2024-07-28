@@ -1,6 +1,6 @@
-import { Controller, Get, HttpException, Post,Headers } from '@nestjs/common';
+import { Controller, Get, HttpException, Post,Headers, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq } from './dtos/auth.dto';
+import { AuthPayloadDto, UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq } from './dtos/auth.dto';
 import { Body, Req, Res, UseGuards } from '@nestjs/common/decorators';
 import { Response } from 'express';
 import { Request } from 'express';
@@ -21,9 +21,16 @@ export class AuthController {
 
 
   @Post('login')
-  @UseGuards(LocalGuard)
-  async login(@Req() req: Request) {
-    return await this.authServices.login(req.user);
+  async login(@Body() authPayloadDto: AuthPayloadDto) {
+    try {
+      const user = await this.authServices.validateUser(authPayloadDto);
+      return await this.authServices.login(user);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
 
@@ -31,25 +38,22 @@ export class AuthController {
   @Post('register')
   async signUpUser(@Body() userCreatDTO: UserCreateReq) {
     try {
-      const existingUser = await this.authServices.findeByEmail(
-        userCreatDTO.email,
-      );
-  
+      const existingUser = await this.authServices.findeByEmail(userCreatDTO.email);
+
       if (existingUser) {
-        console.log("here")
         throw new HttpException('Email already registered', 401);
       }
-  
+
       const userCreated = await this.authServices.creatUser(userCreatDTO);
     
       return userCreated;
-    }catch(error){
-      console.error(error);
-     throw new HttpException('Internal Server Error', 500);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error; // Re-throw the original HttpException
+      }
+      throw new HttpException('Internal Server Error', 500); // Throw a generic internal server error for other cases
     }
-   
   }
-
 
 
   @Get('auth-check')

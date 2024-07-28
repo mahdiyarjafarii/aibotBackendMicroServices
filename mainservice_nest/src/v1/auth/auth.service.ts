@@ -1,4 +1,4 @@
-import { Injectable, Inject, HttpException } from '@nestjs/common';
+import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import {
   AuthPayloadDto,
@@ -70,14 +70,18 @@ export class AuthService {
         email: email,
       },
     });
-    if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      const { passwordHash, ...result } = user;
-      return result;
-    }
-    return null;
 
- 
-  };
+    if (!user) {
+      throw new HttpException('Email not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (!(await bcrypt.compare(password, user.passwordHash))) {
+      throw new HttpException('Incorrect password', HttpStatus.UNAUTHORIZED);
+    }
+
+    const { passwordHash, ...result } = user;
+    return result;
+  }
 
   async login(user: any) {
     const payload = {
@@ -86,13 +90,7 @@ export class AuthService {
         name: user.name,
       },
     };
-    console.log(
-      {
-        ...user,
-        accessToken: this.jwtService.sign(payload),
-        refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
-      }
-    )
+ 
 
     return {
       ...user,
