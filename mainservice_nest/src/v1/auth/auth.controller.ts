@@ -1,6 +1,6 @@
 import { Controller, Get, HttpException, Post,Headers, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthPayloadDto, UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq } from './dtos/auth.dto';
+import { AuthPayloadDto, UserCreateReq, UserForgetPassReq, UserLoginReq, UserResetPassReq, UserUpdateReq } from './dtos/auth.dto';
 import { Body, Req, Res, UseGuards } from '@nestjs/common/decorators';
 import { Response } from 'express';
 import { Request } from 'express';
@@ -9,6 +9,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { RefreshTokenGuard } from './guards/refresh.guard';
 import { GoogleOauthGuard } from './guards/google-oauth.guard';
+import { User } from '../decorators/user.decorator';
 
 
 @Controller({
@@ -69,6 +70,23 @@ export class AuthController {
     const newAccessToken = await this.authServices.generateNewAccessToken(user);
     return { accessToken: newAccessToken };
   }
+  @Post('update-user')
+   @UseGuards(JwtAuthGuard) 
+  async updateUser(
+     @Req() req: Request,
+     @User() user: any,  
+     @Body() updateData: UserUpdateReq) {
+  try {
+    const userId = user.user_id; 
+    const updatedUser = await this.authServices.updateUser(userId, updateData);
+    return updatedUser;
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
@@ -80,6 +98,7 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(@Req() req:any, @Res() res: Response) {
     const FRONTEND_URL ="http://localhost:3000"
+    // console.log(req.user)
     try {
       const token = await this.authServices.oAuthLogin(req.user);
       res.redirect(`${FRONTEND_URL}/oauth?token=${token.jwt}`);

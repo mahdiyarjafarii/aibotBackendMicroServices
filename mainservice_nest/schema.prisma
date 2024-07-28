@@ -12,6 +12,9 @@ model users {
   name         String   @db.VarChar(255)
   lastName     String?  @db.VarChar(255)
   email        String?  @unique @db.VarChar(255)
+  photoUrl     String?  @db.VarChar(255)
+  mobileNumber  String?  @db.VarChar(255)
+  organisation  String?  @db.VarChar(255)
   passwordHash String   @db.VarChar(255)
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt

@@ -6,6 +6,7 @@ import {
   UserEntity,
   UserForgetPassReq,
   UserResetPassReq,
+  UserUpdateReq,
 } from './dtos/auth.dto';
 // import { JwtService } from '@nestjs/jwt';
 import * as jwt from 'jsonwebtoken';
@@ -37,6 +38,7 @@ export class AuthService {
     lastName,
     email,
     password,
+    photoUrl
   }: UserCreateReq): Promise<UserEntity> {
     try {
       const passwordHash = await bcrypt.hash(password, process.env.SALT_BCRYPT);
@@ -52,6 +54,22 @@ export class AuthService {
     } catch (error) {
       console.log(error);
       throw new Error(error);
+    }
+  }
+  async updateUser(userId: string, updateData: UserUpdateReq): Promise<UserEntity> {
+    try {
+      const updatedUser = await this.prismaService.users.update({
+        where: {
+          user_id: userId,
+        },
+        data: {
+          ...updateData,
+        },
+      });
+      return new UserEntity(updatedUser);
+    } catch (error) {
+      console.error(error);
+      throw new HttpException('Failed to update user', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -100,8 +118,15 @@ export class AuthService {
   }
 
   async oAuthLogin(user:any) {
+
     if (!user) {
       throw new Error('User not found!!!');
+    };
+
+    let existingUser = await this.findeByEmail(user.email);
+    
+    if (!existingUser) {
+      existingUser = await this.creatUser({...user,password:`${user.name}1234@`,photoUrl:user.picture});
     }
 
     const payload = {

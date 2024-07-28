@@ -1,4 +1,4 @@
-import {IsEmail , IsString, MinLength } from 'class-validator';
+import {IsEmail , IsOptional, IsString, MinLength } from 'class-validator';
 
 
 export class UserCreateReq{
@@ -15,6 +15,10 @@ export class UserCreateReq{
     @MinLength(8)
     password:string
 
+    @IsOptional()
+    @IsString()
+    photoUrl?:string
+    
 }
 export class UserLoginReq{
 
@@ -24,6 +28,23 @@ export class UserLoginReq{
     @IsString()
     password:string
 
+}
+export class UserUpdateReq {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  mobileNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  organisation?: string;
 }
 
 export class AuthPayloadDto {
