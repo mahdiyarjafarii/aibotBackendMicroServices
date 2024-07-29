@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import { BotCreate } from './dtos/mybots.dto';
 
@@ -153,12 +153,17 @@ export class MyBotsService {
     pageNumber: number,
     itemsPerPage: number,
     type: string,
+    search: string,
     user_id: string,
   ) {
     const totalCount = await this.prismaService.bots.count({
       where: {
         user_id,
         type,
+        name: {
+          contains: search || '',  
+          mode: 'insensitive', 
+        },
       },
     });
 
@@ -166,7 +171,12 @@ export class MyBotsService {
       where: {
         user_id,
         type,
+        name: {
+          contains: search || '',  
+          mode: 'insensitive', 
+        },
       },
+
       take: +itemsPerPage,
       skip: (pageNumber - 1) * itemsPerPage,
     });
@@ -386,6 +396,17 @@ export class MyBotsService {
       throw new HttpException('Internal Server Error', 500);
     }
   };
+  async countBots(userId: string): Promise<number> {
+    try {
+      return await this.prismaService.bots.count({
+        where: {
+          user_id: userId,
+        },
+      });
+    } catch (error) {
+      throw new HttpException('Failed to count bots', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
 
   

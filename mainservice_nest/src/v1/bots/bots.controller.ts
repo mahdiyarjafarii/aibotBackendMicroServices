@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, Post, Headers } from '@nestjs/common';
+import { Controller, Get, HttpException, Post, Headers, HttpStatus } from '@nestjs/common';
 import {
   Body,
   Delete,
@@ -108,16 +108,27 @@ export class MyBotsController {
     @Query('page') pageNumber?: number,
     @Query('itemsPerPage') itemsPerPage?: number,
     @Query('type') type?: string,
+    @Query('search') search?: string,
     @User() user?: any,
   ) {
     return await this.mybotsServices.getAllBots(
       pageNumber,
       itemsPerPage,
       type,
+      search,
       user.user_id,
     );
   };
-  
+  @Get('/count')
+  @UseGuards(JwtAuthGuard)
+  async countBots(@User() user: any) {
+    try {
+      const count = await this.mybotsServices.countBots(user.user_id);
+      return { count };
+    } catch (error) {
+      throw new HttpException('Failed to retrieve bot count', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   @Post("/dataSource/update/:bot_id")
   @UseGuards(JwtAuthGuard)
