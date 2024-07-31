@@ -85,15 +85,27 @@ export class MyBotsController {
     };
 
     if (files?.length) {
+      // Rename the uploaded files directory
       renameSync(
         `${cwd()}/uploads/tmp`,
         `${cwd()}/uploads/${createdBot.bot_id}`,
       );
+  
       const fileUrlPrefix =
         process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
-        const fileLinks = files.map(file => `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${file.originalname}`);
-        data['static_files'] = fileLinks;
+  
+      // Create file information including link, size, and name
+      const filesInfo = files.map(file => ({
+        link: `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${file.originalname}`,
+        size: file.size,
+        name: file.originalname
+      }));
+  
+      // Update data object with files_info
+      data['files_info'] = filesInfo;
+      data['static_files'] = filesInfo.map(file => file.link);
     }
+  
 
     const createdDataSource = await this.mybotsServices.createDataSource(data);
 

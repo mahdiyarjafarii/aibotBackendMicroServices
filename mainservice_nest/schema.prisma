@@ -46,6 +46,7 @@ model datasources {
   datasource_id  String @id @default(uuid())
   bot_id         String 
   static_files   Json?   @default("[]")
+  files_info     Json?   @default("[]")
   urls           Json?  @default("[]")
   text_input     String?   @default("") @db.VarChar(255)
   qANDa_input    Json?  @default("[]")
