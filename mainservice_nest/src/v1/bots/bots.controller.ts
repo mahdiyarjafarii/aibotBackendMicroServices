@@ -11,7 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common/decorators';
-
+import * as iconv from 'iconv-lite';
 import { MyBotsService } from './bots.service';
 import { BotCreate, BotUpdateDataSource, CreateConversationDto } from './dtos/mybots.dto';
 
@@ -52,7 +52,8 @@ export class MyBotsController {
           cb(null, destinationPath);
         },
         filename: function (req, file, cb) {
-          cb(null, file.originalname);
+          const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+          cb(null, originalName);
         },
       }),
     }),
@@ -95,11 +96,14 @@ export class MyBotsController {
         process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
   
       // Create file information including link, size, and name
-      const filesInfo = files.map(file => ({
-        link: `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${file.originalname}`,
-        size: file.size,
-        name: file.originalname
-      }));
+      const filesInfo = files.map(file => {
+        const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+        return {
+          link: `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${originalName}`,
+          size: file.size,
+          name: originalName,
+        };
+      });
   
       // Update data object with files_info
       data['files_info'] = filesInfo;
@@ -161,7 +165,8 @@ export class MyBotsController {
           cb(null, destinationPath);
         },
         filename: function (req, file, cb) {
-          cb(null, file.originalname);
+          const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+          cb(null, originalName);
         },
       }),
     }),
@@ -191,15 +196,15 @@ export class MyBotsController {
 
 
     const { uploadedFile: uploadedFileStr, ...data } = botsDTO;
-    console.log(data)
+    
    
     const result = await this.mybotsServices.findeDataSource(botId,user.user_id);
     let static_files = result.static_files;
-     data['static_files']=static_files;
+    let files_info = result.files_info;
 
     // step 1 (check file delted ):
     let uploadedFile = [];
-       if (botsDTO.uploadedFile) {
+      if (botsDTO.uploadedFile) {
           uploadedFile = JSON.parse(botsDTO.uploadedFile);
           console.log(uploadedFile)
       }
@@ -222,16 +227,22 @@ export class MyBotsController {
             }
           }
         };
-        data['static_files'] = static_files.filter(url => {
+        static_files = static_files.filter(url => {
           const uploaded = uploadedFile.find(upFile => upFile.url === url);
           return !(uploaded && (uploaded.remove == "true" || uploaded.remove == true));
         });
+        files_info = files_info.filter(fileInfo => {
+          const uploaded = uploadedFile.find(upFile => upFile.fileName === fileInfo.name);
+          return !(uploaded && (uploaded.remove == "true" || uploaded.remove == true));
+        });
 
-      }
- 
+        data['static_files'] = static_files;
+        data['files_info'] = files_info;
 
 
-        if (files?.length > 0) {
+      };
+      data['static_files'] = data['static_files'] || [];
+      if (files?.length > 0) {
           const targetDir = `${cwd()}/uploads/${botId}`;
           if (!existsSync(targetDir)) {
             mkdirSync(targetDir, { recursive: true });
@@ -251,12 +262,23 @@ export class MyBotsController {
 
           const fileUrlPrefix =
           process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
-          const fileLinks = files.map(file => `${fileUrlPrefix}/uploads/${botId}/${file.originalname}`);
-          data['static_files'] = [...data['static_files'],...fileLinks]
+          const fileLinks = files.map(file => {
+            const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+            return `${fileUrlPrefix}/uploads/${botId}/${originalName}`;
+          });
+          const newFilesInfo = files.map(file => {
+            const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+            return {
+              link: `${fileUrlPrefix}/uploads/${botId}/${file.originalname}`,
+              size: file.size,
+              name: originalName
+            };
+          });
+          data['static_files'] = [...data['static_files'],...fileLinks];
+          data['files_info'] = [...files_info, ...newFilesInfo];
 
-        };
+      };
        
-     
         const updatedDataSource=await this.mybotsServices.updateDataSource(data,result.datasource_id);
         return updatedDataSource;
 
