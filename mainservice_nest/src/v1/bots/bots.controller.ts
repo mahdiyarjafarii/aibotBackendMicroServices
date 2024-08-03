@@ -280,6 +280,7 @@ export class MyBotsController {
       };
        
         const updatedDataSource=await this.mybotsServices.updateDataSource(data,result.datasource_id);
+        await this.mybotsServices.incrementUpdateDataSource(botId,user.user_id);
         return updatedDataSource;
 
        
@@ -419,10 +420,11 @@ async updateSecurityConfig(
     return res.json({ conversationId: createConversation?.conversationId });
   }
 
-  //@UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get(':botId/conversations')
-  async getBotConversations(@Param('botId') botId: string) {
-    return this.mybotsServices.getConversations(botId);
+  async getBotConversations(@Param('botId') botId: string, @Query('filter') filter?: any ) {
+    console.log(filter)
+    return this.mybotsServices.getConversations(botId,"",filter);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
+import { subDays, subMonths } from 'date-fns';
 import { BotCreate } from './dtos/mybots.dto';
 
 @Injectable()
@@ -190,8 +191,16 @@ export class MyBotsService {
       totalItems: totalCount,
     };
   }
-  async getConversations(botId: string, conversationId?: string) {
+  async getConversations(botId: string, conversationId?: string, filter?: '3_days' | '7_days' | '1_month' | 'all',) {
     let conversations;
+    let dateRange;
+    if (filter === '3_days') {
+      dateRange = subDays(new Date(), 3);
+    } else if (filter === '7_days') {
+      dateRange = subDays(new Date(), 7);
+    } else if (filter === '1_month') {
+      dateRange = subMonths(new Date(), 1);
+    }
 
     if (conversationId) {
       // Fetch a specific conversation by conversation_id and bot_id
@@ -205,20 +214,42 @@ export class MyBotsService {
         },
       });
     } else {
-      // Fetch all conversations for a bot
-      conversations = await this.prismaService.conversations.findMany({
-        where: {
-          bot_id: botId,
-        },
-        include: {
-          records: true, // Optionally include records if you want to fetch messages as well
-        },
-        orderBy: {
-          created_at: 'desc', // Replace 'createdAt' with the appropriate timestamp field
-      },
-      });
-    }
 
+      if (filter && filter !== 'all' && dateRange) {
+        // Fetch conversations within the specified date range
+        conversations = await this.prismaService.conversations.findMany({
+          where: {
+            bot_id: botId,
+            created_at: { gte: dateRange },
+          },
+          include: {
+            records: true,
+          },
+          orderBy: {
+            created_at: 'desc',
+          },
+        });
+      } else {
+        // Fetch all conversations for a bot
+        conversations = await this.prismaService.conversations.findMany({
+          where: {
+            bot_id: botId,
+          },
+          include: {
+            records: true,
+          },
+          orderBy: {
+            created_at: 'desc',
+          },
+        });
+      }
+    };
+
+    const allConversationsCount = await this.prismaService.conversations.count({
+      where: {
+        bot_id: botId,
+      },
+    });
     if (
       !conversations ||
       (Array.isArray(conversations) && conversations.length === 0)
@@ -228,9 +259,11 @@ export class MyBotsService {
           `Conversation with ID ${conversationId} not found`,
         );
       } else {
-        throw new NotFoundException(
-          `No conversations found for bot with ID ${botId}`,
-        );
+        if (allConversationsCount === 0) {
+          return { message: 'Your bot has never had a conversation' };
+        } else {
+          return { message: 'Your bot has conversations, but none within the selected filter' };
+        }
       }
     }
 
@@ -280,6 +313,7 @@ export class MyBotsService {
           bot: {
             select: {
               user_id: true,
+              update_datasource:true
             },
           },
         },
@@ -296,6 +330,25 @@ export class MyBotsService {
       throw new HttpException('Internal Server Error', 500);
     }
   };
+  async incrementUpdateDataSource(botId: string, userId: string): Promise<void> {
+    try {
+      const result = await this.prismaService.bots.update({
+        where: { bot_id: botId, user_id: userId },
+        data: {
+          update_datasource: {
+            increment: 1,
+          },
+        },
+      });
+  
+      if (!result) {
+        throw new HttpException('Failed to update update_datasource', 404);
+      }
+    } catch (error) {
+      console.error('Error incrementing update_datasource:', error);
+      throw new HttpException('Internal Server Error', 500);
+    }
+  }
 
   async findeConfigs(botId: string,userId: string): Promise<any> {
     try {

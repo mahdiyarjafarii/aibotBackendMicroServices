@@ -37,6 +37,7 @@ model bots {
   token_limit      Int             @default(8000000)
   token_limit_pp   Int             @default(8000)
   datasource       datasources[]
+  update_datasource Int             @default(0)
   user             users           @relation(fields: [user_id], references: [user_id])
   conversations    conversations[]
   //records          records[]
