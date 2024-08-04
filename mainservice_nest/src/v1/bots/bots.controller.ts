@@ -423,7 +423,6 @@ async updateSecurityConfig(
   // @UseGuards(JwtAuthGuard)
   @Get(':botId/conversations')
   async getBotConversations(@Param('botId') botId: string, @Query('filter') filter?: any ) {
-    console.log(filter)
     return this.mybotsServices.getConversations(botId,"",filter);
   }
 

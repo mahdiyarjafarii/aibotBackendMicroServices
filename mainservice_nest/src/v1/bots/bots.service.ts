@@ -313,7 +313,8 @@ export class MyBotsService {
           bot: {
             select: {
               user_id: true,
-              update_datasource:true
+              update_datasource:true,
+              status:true
             },
           },
         },
