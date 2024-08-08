@@ -54,6 +54,7 @@ export class MyBotsService {
       ask_credentials: {},
       footer_msg: "hamyar.chat",
       bot_name: "raya chat",
+      theme_bot:"light",
       user_msg_bg_color: "#3b81f6",
       bot_image: "https://test.png",
       bot_widget_border_color: "#6495ed",
