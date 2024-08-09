@@ -8,8 +8,8 @@ export class S3Service {
 
   constructor() {
     this.s3 = new AWS.S3({
-      endpoint: 'http://84.46.250.91:9000', // MinIO endpoint
-      accessKeyId: 'admin',
+      
+     
       secretAccessKey: 'admin123',
       s3ForcePathStyle: true, // needed for MinIO
       signatureVersion: 'v4',
