@@ -39,6 +39,29 @@ export class MyBotsController {
   ) {}
   @Post('/create')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FilesInterceptor('files', 7, {
+      storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+          const destinationPath = `${cwd()}/uploads/tmp`;
+
+          if (!existsSync(destinationPath)) {
+            try {
+              mkdirSync(destinationPath, { recursive: true }); // Ensure parent directories are created
+            } catch (err) {
+              return cb(err);
+            }
+          }
+
+          cb(null, destinationPath);
+        },
+        filename: function (req, file, cb) {
+          const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+          cb(null, originalName);
+        },
+      }),
+    }),
+  )
   async createBots(
     @UploadedFiles() files: any,
     @Body() botsDTO: BotCreate,
@@ -67,26 +90,28 @@ export class MyBotsController {
     };
 
     if (files?.length) {
-      
-      const bucketName = `${createdBot.bot_id}`;
-      const fileUrlPrefix = process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
-      await this.s3Service.createBucket(bucketName);
-  
-      const filesInfo = await Promise.all(
-        files.map(async (file) => {
-          const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
-          await this.s3Service.uploadFile(bucketName, originalName, file.path);
-          
-          return {
-            link: `${fileUrlPrefix}/${bucketName}/${originalName}`,
-            size: file.size,
-            name: originalName,
-          };
-        }),
+      // Rename the uploaded files directory
+      renameSync(
+        `${cwd()}/uploads/tmp`,
+        `${cwd()}/uploads/${createdBot.bot_id}`,
       );
   
+      const fileUrlPrefix =
+        process.env.IMAGE_URL_PREFIX || 'http://localhost:12000';
+  
+      // Create file information including link, size, and name
+      const filesInfo = files.map(file => {
+        const originalName = iconv.decode(Buffer.from(file.originalname, 'binary'), 'utf8');
+        return {
+          link: `${fileUrlPrefix}/uploads/${createdBot.bot_id}/${originalName}`,
+          size: file.size,
+          name: originalName,
+        };
+      });
+  
+      // Update data object with files_info
       data['files_info'] = filesInfo;
-      data['static_files'] = filesInfo.map((file) => file.link);
+      data['static_files'] = filesInfo.map(file => file.link);
     }
   
 
@@ -94,6 +119,7 @@ export class MyBotsController {
 
     return createdDataSource;
   };
+
 
 
 
